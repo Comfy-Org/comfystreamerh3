@@ -1,0 +1,5 @@
+HLS.js light browser bundle, version 1.6.13
+Source: https://registry.npmjs.org/hls.js/-/hls.js-1.6.13.tgz
+Project: https://github.com/video-dev/hls.js
+License: Apache-2.0; see hls.LICENSE.txt and Apache-2.0.txt.
+The bundle is served locally; no CDN or sibling repository is required.

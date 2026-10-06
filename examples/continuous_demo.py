@@ -26,11 +26,16 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_PATH = ROOT / "examples" / "basic_text_to_video_api.json"
+HLS_PLAYER_PATH = ROOT / "examples" / "vendor" / "hls.light.min.js"
 PROMPT_NODE = "5"
 SAMPLER_NODE = "8"
 OUTPUT_NODE = "12"
 MAX_PROMPT_LENGTH = 12_000
 MAX_PLAYLIST_SEGMENTS = 180
+# AAC priming and trailing packets can extend beyond the video EXTINF duration.
+# Keep the next clip's DTS clear of that encoder padding for both media tracks.
+CLIP_BOUNDARY_SAFETY_SECONDS = 0.1
+RETIRED_SEGMENT_GRACE_SECONDS = 60
 RESOLUTION_PROFILES = {
     "448x256": {"width": 448, "height": 256, "gpuLabel": "RTX 5090"},
     "512x320": {"width": 512, "height": 320, "gpuLabel": "RTX 6000 Pro"},
@@ -44,6 +49,7 @@ PAGE = r'''<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#090b0f">
   <title>ComfyStreamerH3 Live</title>
+  <script src="/static/hls.light.min.js"></script>
   <style>
     :root { color-scheme: dark; font: 14px system-ui, sans-serif; background: #090b0f; color: #f3f4f2; }
     * { box-sizing: border-box; }
@@ -104,7 +110,9 @@ PAGE = r'''<!doctype html>
     const status = document.querySelector('#status');
     let started = false;
     let resolutionInitialized = false;
-    let lastStatus = '';
+    let player = null;
+    let retryTimer = null;
+    let retryCount = 0;
     let playbackError = '';
     let profileMap = {};
 
@@ -114,16 +122,45 @@ PAGE = r'''<!doctype html>
     function startPlayback() {
       if (started) return;
       started = true;
-      if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = '/live.m3u8';
+      const source = `/live.m3u8?client=${Date.now()}`;
+      if (window.Hls && Hls.isSupported()) {
+        player = new Hls({
+          liveSyncDuration: 30, liveMaxLatencyDuration: Infinity,
+          maxBufferLength: 90, maxMaxBufferLength: 120, backBufferLength: 30,
+        });
+        player.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+        player.on(Hls.Events.ERROR, (_event, data) => {
+          if (data.fatal) recoverPlayback('Reconnecting video…');
+        });
+        player.attachMedia(video);
+        player.loadSource(source);
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = source;
         video.play().catch(() => {});
       } else {
-        playbackError = 'This browser does not support native HLS playback.';
+        playbackError = 'This browser does not support HLS playback.';
       }
     }
+    function recoverPlayback(message) {
+      playbackError = message;
+      status.textContent = message;
+      if (retryTimer) return;
+      retryTimer = window.setTimeout(() => {
+        retryTimer = null;
+        if (player) player.destroy();
+        player = null;
+        started = false;
+        startPlayback();
+      }, Math.min(1000 * 2 ** retryCount++, 30000));
+    }
     video.addEventListener('error', () => {
-      playbackError = video.error?.message || 'The browser could not play the HLS stream.';
-      status.textContent = playbackError;
+      recoverPlayback('Reconnecting video…');
+    });
+    video.addEventListener('playing', () => {
+      playbackError = '';
+      retryCount = 0;
+      if (retryTimer) window.clearTimeout(retryTimer);
+      retryTimer = null;
     });
     async function refresh() {
       try {
@@ -145,10 +182,7 @@ PAGE = r'''<!doctype html>
         updateGpuLabel();
         if (state.playable) startPlayback();
         const message = state.error || state.status;
-        if (message !== lastStatus) {
-          status.textContent = playbackError || message;
-          lastStatus = message;
-        }
+        status.textContent = playbackError || message;
       } catch (error) {
         status.textContent = `Local demo error: ${error.message}`;
       }
@@ -232,11 +266,18 @@ def _ready_gpu_profiles(deployments: list[object]) -> dict[str, dict[str, Any]]:
     return profiles
 
 
+def _cli_env() -> dict[str, str]:
+    env = os.environ.copy()
+    env.pop("COMFY_API_KEY", None)
+    env.pop("COMFY_CLOUD_API_KEY", None)
+    return env
+
+
 def discover_ready_gpu_profiles() -> dict[str, dict[str, Any]]:
     """Find existing ready workspace GPUs with the user's Comfy CLI login."""
     result = subprocess.run(
         ["comfy", "--json", "deploy", "ls", "--workspace", "--status", "ready"],
-        cwd=ROOT, capture_output=True, text=True, timeout=30, check=False,
+        cwd=ROOT, env=_cli_env(), capture_output=True, text=True, timeout=30, check=False,
     )
     if result.returncode:
         raise RuntimeError(_cli_error(result.stdout, result.stderr) or "Comfy Platform discovery failed")
@@ -260,7 +301,11 @@ class ContinuousDemo:
         self.stopping = threading.Event()
         self.requested = {"prompt": default_prompt, "resolution": self.default_resolution}
         self.entries: list[tuple[int, float, str, bool]] = []
+        self.retired_segments: list[tuple[float, Path]] = []
         self.next_sequence = 0
+        self.discontinuity_sequence = 0
+        self.total_duration_seconds = 0.0
+        self.previous_resolution: str | None = None
         self.attempt_count = 0
         self.clip_count = 0
         self.status = "Generating the default prompt…"
@@ -288,7 +333,7 @@ class ContinuousDemo:
                     key: {"width": value["width"], "height": value["height"], "gpuLabel": value["gpuLabel"]}
                     for key, value in self.profiles.items()
                 },
-                "defaultResolution": self.default_resolution if not self.entries else None,
+                "defaultResolution": self.requested["resolution"],
                 "prompt": self.requested["prompt"],
                 "status": self.status,
                 "error": self.error,
@@ -300,12 +345,16 @@ class ContinuousDemo:
     def playlist(self) -> str:
         with self.lock:
             entries = list(self.entries)
-        if self.clip_count < 2 or not entries:
+            playable = self.clip_count >= 2
+            discontinuity_sequence = self.discontinuity_sequence
+        if not playable or not entries:
             return "#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:2\n#EXT-X-MEDIA-SEQUENCE:0\n"
         target = max(2, math.ceil(max(entry[1] for entry in entries)))
         lines = [
             "#EXTM3U", "#EXT-X-VERSION:3", f"#EXT-X-TARGETDURATION:{target}",
-            f"#EXT-X-MEDIA-SEQUENCE:{entries[0][0]}", "#EXT-X-INDEPENDENT-SEGMENTS",
+            f"#EXT-X-MEDIA-SEQUENCE:{entries[0][0]}",
+            f"#EXT-X-DISCONTINUITY-SEQUENCE:{discontinuity_sequence}",
+            "#EXT-X-INDEPENDENT-SEGMENTS",
         ]
         for _sequence, duration, uri, discontinuity in entries:
             if discontinuity:
@@ -319,7 +368,37 @@ class ContinuousDemo:
             process = self.active_process
         if process and process.poll() is None:
             process.terminate()
-        self.worker.join(timeout=5)
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+        if self.worker.is_alive():
+            self.worker.join()
+
+    def _run_process(
+        self, command: list[str], *, timeout: float, env: dict[str, str] | None = None,
+    ) -> subprocess.CompletedProcess[str]:
+        with self.lock:
+            if self.stopping.is_set():
+                raise InterruptedError("demo is stopping")
+            process = subprocess.Popen(
+                command, cwd=ROOT, env=env, text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            )
+            self.active_process = process
+        try:
+            stdout, stderr = process.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate()
+            raise RuntimeError(f"{command[0]} timed out after {timeout:g} seconds")
+        finally:
+            with self.lock:
+                self.active_process = None
+        if self.stopping.is_set():
+            raise InterruptedError("demo is stopping")
+        return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
     def _run_forever(self) -> None:
         while not self.stopping.is_set():
@@ -330,24 +409,48 @@ class ContinuousDemo:
                 self.status = f"Generating {request['resolution']} on {self.profiles[request['resolution']]['gpuLabel']}…"
                 self.error = None
             work = self.root / f"clip-{clip_number:06d}"
-            work.mkdir()
             try:
+                work.mkdir()
                 video = self._generate(request, work)
-                published = self._segment(video, clip_number)
+                with self.lock:
+                    timestamp_offset = (
+                        self.total_duration_seconds
+                        + self.clip_count * CLIP_BOUNDARY_SAFETY_SECONDS
+                    )
+                published = self._segment(video, clip_number, timestamp_offset)
                 with self.lock:
                     self.clip_count += 1
+                    discontinuity = (
+                        self.previous_resolution is not None
+                        and request["resolution"] != self.previous_resolution
+                    )
                     for index, duration, uri in published:
-                        self.entries.append((self.next_sequence, duration, uri, index == 0 and self.next_sequence > 0))
+                        self.entries.append((self.next_sequence, duration, uri, discontinuity and index == 0))
                         self.next_sequence += 1
+                    self.total_duration_seconds += sum(duration for _, duration, _ in published)
+                    self.previous_resolution = request["resolution"]
                     if len(self.entries) > MAX_PLAYLIST_SEGMENTS:
                         removed = self.entries[:-MAX_PLAYLIST_SEGMENTS]
                         self.entries = self.entries[-MAX_PLAYLIST_SEGMENTS:]
-                        self.next_sequence = max(self.next_sequence, self.entries[-1][0] + 1)
+                        self.discontinuity_sequence += sum(1 for entry in removed if entry[3])
                         for _, _, uri, _ in removed:
-                            (self.root / urllib.parse.unquote(uri)).unlink(missing_ok=True)
+                            self.retired_segments.append((
+                                time.monotonic() + RETIRED_SEGMENT_GRACE_SECONDS,
+                                self.root / uri,
+                            ))
+                    now = time.monotonic()
+                    remaining = []
+                    for deadline, path in self.retired_segments:
+                        if deadline <= now:
+                            path.unlink(missing_ok=True)
+                        else:
+                            remaining.append((deadline, path))
+                    self.retired_segments = remaining
                     self.status = "Live — generating the next clip."
                     self.error = None
             except Exception as error:
+                if self.stopping.is_set():
+                    break
                 with self.lock:
                     self.status = "Generation failed; retrying."
                     self.error = str(error)[:1200]
@@ -368,45 +471,32 @@ class ContinuousDemo:
         output_dir = work / "outputs"
         workflow_path.write_text(json.dumps(workflow))
         output_dir.mkdir()
-        env = os.environ.copy()
-        env.pop("COMFY_API_KEY", None)
-        env.pop("COMFY_CLOUD_API_KEY", None)
         command = [
             "comfy", "--json", "deploy", "run", "--workflow", str(workflow_path),
             "--deployment", profile["deploymentId"], "--output-dir", str(output_dir), "--timeout", "900",
         ]
-        process = subprocess.Popen(command, cwd=ROOT, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        with self.lock:
-            self.active_process = process
-        try:
-            stdout, stderr = process.communicate(timeout=960)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            stdout, stderr = process.communicate()
-            raise RuntimeError("Comfy Platform generation timed out after 16 minutes")
-        finally:
-            with self.lock:
-                self.active_process = None
-        if process.returncode:
-            raise RuntimeError(_cli_error(stdout, stderr) or "Comfy Platform generation failed")
+        result = self._run_process(command, env=_cli_env(), timeout=960)
+        if result.returncode:
+            raise RuntimeError(_cli_error(result.stdout, result.stderr) or "Comfy Platform generation failed")
         videos = sorted(path for path in output_dir.rglob("*") if path.is_file() and path.suffix.lower() == ".mp4")
         if not videos:
             raise RuntimeError("Comfy Platform completed without returning an MP4")
         return videos[0]
 
-    def _segment(self, video: Path, clip_number: int) -> list[tuple[int, float, str]]:
+    def _segment(self, video: Path, clip_number: int, timestamp_offset: float) -> list[tuple[int, float, str]]:
         clip_dir = self.media_root / f"clip-{clip_number:06d}"
         clip_dir.mkdir()
         local_playlist = clip_dir / "clip.m3u8"
         segment_pattern = clip_dir / "segment-%05d.ts"
-        result = subprocess.run([
+        result = self._run_process([
             "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(video),
             "-map", "0:v:0", "-map", "0:a?", "-c:v", "libx264", "-preset", "veryfast",
             "-tune", "zerolatency", "-pix_fmt", "yuv420p", "-g", "24", "-keyint_min", "24",
             "-sc_threshold", "0", "-c:a", "aac", "-b:a", "128k", "-f", "hls",
             "-hls_time", "1", "-hls_list_size", "0", "-hls_flags", "independent_segments",
+            "-output_ts_offset", f"{timestamp_offset:.6f}",
             "-hls_segment_filename", str(segment_pattern), str(local_playlist),
-        ], cwd=ROOT, capture_output=True, text=True, timeout=300, check=False)
+        ], timeout=300)
         if result.returncode:
             raise RuntimeError((result.stderr or "FFmpeg could not segment the generated video")[-1200:])
         published: list[tuple[int, float, str]] = []
@@ -436,6 +526,8 @@ def make_handler(demo: ContinuousDemo) -> type[BaseHTTPRequestHandler]:
                 self._send(200, PAGE.encode(), "text/html; charset=utf-8")
             elif path == "/healthz":
                 self._send(200, b'{"ok":true}', "application/json")
+            elif path == "/static/hls.light.min.js":
+                self._send(200, HLS_PLAYER_PATH.read_bytes(), "application/javascript")
             elif path == "/api/state":
                 self._json(200, demo.snapshot())
             elif path == "/live.m3u8":
@@ -443,10 +535,15 @@ def make_handler(demo: ContinuousDemo) -> type[BaseHTTPRequestHandler]:
             elif path.startswith("/media/"):
                 relative = urllib.parse.unquote(path.removeprefix("/media/"))
                 target = (demo.media_root / relative).resolve()
-                if not target.is_relative_to(demo.media_root.resolve()) or not target.is_file():
+                if not target.is_relative_to(demo.media_root.resolve()):
                     self.send_error(404)
                     return
-                self._send(200, target.read_bytes(), "video/mp2t")
+                try:
+                    body = target.read_bytes()
+                except (FileNotFoundError, IsADirectoryError):
+                    self.send_error(404)
+                    return
+                self._send(200, body, "video/mp2t")
             else:
                 self.send_error(404)
 
@@ -494,6 +591,8 @@ def main() -> int:
         raise SystemExit("Install and sign in to comfy-cli before starting this demo.")
     if shutil.which("ffmpeg") is None:
         raise SystemExit("Install ffmpeg before starting this demo.")
+    if not HLS_PLAYER_PATH.is_file():
+        raise SystemExit("The repo-local HLS player file is missing.")
     profiles = discover_ready_gpu_profiles()
     if not profiles:
         raise SystemExit("No ready RTX 5090 or RTX 6000 Pro deployment was found by Comfy CLI.")
@@ -513,6 +612,9 @@ def main() -> int:
     print(f"Continuous video UI: {base_url}/live", flush=True)
     if not args.no_browser:
         webbrowser.open_new_tab(base_url + "/live")
+    def interrupt(_signum: int, _frame: Any) -> None:
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, interrupt)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

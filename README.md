@@ -31,6 +31,8 @@ python3 -m pip install -U comfy-cli
 comfy cloud login
 ```
 
+Install `ffmpeg` and make sure it is available on your `PATH` for the continuous viewer.
+
 From the repository root:
 
 ```sh
