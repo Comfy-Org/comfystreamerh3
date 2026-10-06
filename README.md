@@ -99,7 +99,8 @@ python3 examples/live_demo.py --platform
 The launcher reads the GPU endpoint from `comfy deploy status .` and starts with
 the prompt “Will Smith eating spaghetti.” Open the local player at
 `http://127.0.0.1:8765/live`. Platform mode renders at 512×320; local GPU mode
-remains 448×256.
+remains 448×256. Edit the prompt below the video and select **Run prompt** to
+start a new run.
 
 Pause and resume the deployment when you plan to use it again:
 
