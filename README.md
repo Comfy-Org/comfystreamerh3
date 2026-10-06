@@ -20,16 +20,6 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/Comfy-Org/comfystreamerh3.git
 ```
 
-## Continuous live viewer
-
-For continuous HLS playback instead of one clip per prompt, run:
-
-```bash
-python3 examples/continuous_demo.py
-```
-
-Requires a ready Comfy Platform GPU and the sibling `../comfystream` checkout.
-
 ## Deploy to the Comfy Developer Platform
 
 Sign up for a [Comfy plan](https://comfy.org/pricing/) to deploy.
