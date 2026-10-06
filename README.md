@@ -70,9 +70,9 @@ above. Output: 448×256, 24 fps.
 
 ComfyStream maintains the deployment build and packages its custom-node source
 with the pinned runtime and model assets. Integrate changes from this repository
-into the ComfyStream build before deploying. From the ComfyStream repository
-root, follow the [deployment guide](https://github.com/Comfy-Org/comfystreamer/blob/main/deploy/README.md#deploy-the-current-pack)
-to set cost controls, then create or resume the deployment and check its status:
+into the ComfyStream build before deploying. Run these commands from the
+ComfyStream repository root to create or resume the deployment and check its
+status:
 
 ```sh
 ./scripts/deploy_comfystreamer.sh start
