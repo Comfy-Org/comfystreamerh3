@@ -20,12 +20,6 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/Comfy-Org/comfystreamerh3.git
 ```
 
-## Try the demo
-
-Run the prompt page against local ComfyUI, or add `--platform` to use a ready
-Comfy Developer Platform deployment. See the [quick start](QUICKSTART.md) for
-setup and run instructions.
-
 ## Continuous live viewer
 
 To run the continuous HLS viewer with the resolution picker, launch the
