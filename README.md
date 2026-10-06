@@ -68,16 +68,46 @@ above. Output: 448×256, 24 fps.
 
 ## Deploy to the Comfy Developer Platform
 
-ComfyStream maintains the deployment build and packages its custom-node source
-with the pinned runtime and model assets. Integrate changes from this repository
-into the ComfyStream build before deploying. Run these commands from the
-ComfyStream repository root to create or resume the deployment and check its
-status:
+The ComfyStream build packages this node with its pinned runtime and model
+files. A local ComfyUI install or GPU is not required to build or deploy it.
+
+1. Copy this repository's node pack into
+   `comfystream/deploy/custom_nodes/fasth3_deploy/`. For example:
+
+   ```sh
+   rsync -a --delete --exclude='.git/' --exclude='benchmark-results/' \
+     /path/to/comfystreamerh3/ \
+     /path/to/comfystream/deploy/custom_nodes/fasth3_deploy/
+   ```
+
+   This replaces the pack directory with the files from this repository.
+2. Make the ComfyStream build spec include the model assets listed above. The
+   build spec controls which weights are included. Update its model check to
+   match too: the current ComfyStream helper still expects the 32B text encoder,
+   while this node uses Qwen 4B and ClipProj.
+3. Sign in with the Comfy CLI using an account with Developer Platform access.
+   Set these cost limits in the same shell before starting the deployment:
+
+   | Variable | Purpose |
+   |---|---|
+   | `COMFYSTREAM_BUILD_ESTIMATE_USD` | Estimated build cost. |
+   | `COMFYSTREAM_BUILD_BUDGET_USD` | Maximum allowed build estimate. |
+   | `COMFYSTREAM_GPU_HOURLY_USD` | Declared hourly rate per GPU. |
+   | `COMFYSTREAM_OVERLAP_BUDGET_USD` | Maximum cost for overlapping workers. |
+   | `COMFYSTREAM_OVERLAP_MAX_SECONDS` | Maximum overlap duration. |
+
+4. From the ComfyStream repository root, create or resume the deployment and
+   check the worker status and URL:
 
 ```sh
+cd /path/to/comfystream
 ./scripts/deploy_comfystreamer.sh start
 ./scripts/deploy_comfystreamer.sh status
 ```
 
-Use `./scripts/deploy_comfystreamer.sh stop` to stop workers and keep the
-deployment for later. Running GPU workers incur charges.
+The helper uploads the node pack and pinned runtime, creates a Linux/NVIDIA
+release when needed, and waits for the worker to become ready. Run
+`./scripts/deploy_comfystreamer.sh stop` to stop the GPU worker while retaining
+the deployment and storage. Run `./scripts/deploy_comfystreamer.sh remove` to
+delete the cloud deployment and build while keeping the local build spec.
+Running workers incur GPU charges; stopped deployments retain storage.
