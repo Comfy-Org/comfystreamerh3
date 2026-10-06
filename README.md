@@ -89,6 +89,14 @@ comfy deploy status .
 zero between jobs; the next job has a cold start. `comfy deploy status` shows
 the endpoint.
 
+Start the sample app against the deployment:
+
+```sh
+python3 examples/live_demo.py --platform
+```
+
+Open `http://127.0.0.1:8765/live`.
+
 Stop and resume the deployment:
 
 ```sh
