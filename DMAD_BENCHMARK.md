@@ -1,6 +1,6 @@
 # DMAD benchmark: summary
 
-This is an opt-in experiment for comparing DMAD H3 checkpoints with the FastH3 B1 baseline. It does not change the default profile. This guide assumes DMAD conversion, benchmark scripts, fixtures, and result reports are available in a matching [ComfyStream checkout](https://github.com/Comfy-Org/comfystreamer); this node checkout does not contain them. The commands below cannot be run from this repository alone.
+This is an opt-in experiment for comparing DMAD H3 checkpoints with the FastH3 B1 baseline. It does not change the default profile. This guide assumes DMAD conversion, benchmark scripts, fixtures, and result reports are available in a separate checkout; this node checkout does not contain them. The commands below cannot be run from this repository alone.
 
 ## Before running
 
@@ -11,17 +11,17 @@ This is an opt-in experiment for comparing DMAD H3 checkpoints with the FastH3 B
 
 ## Compare checkpoints
 
-From the **ComfyStream repository root**, a small integration smoke test is:
+From the checkout containing the DMAD benchmark scripts, a small integration smoke test is:
 
 ```bash
 python3 scripts/benchmark_dmad_h3.py \
   --base-url http://127.0.0.1:8188 \
-  --output-dir /workspace/comfystream/benchmark-results/dmad-h3 \
+  --output-dir /workspace/benchmark-results/dmad-h3 \
   --checkpoint-lora-critic dmad_h3_lora_critic.safetensors \
   --limit 2
 ```
 
-This runs B1 and dense BF16 DMAD on matched requests. Two clips are only a functional check; they do not support a quality or speed claim. Use the companion repository's benchmark and held-out evaluation fixtures for larger comparisons. Check that the named scripts and fixtures exist in the checkout before running: this node repository does not contain them.
+This runs B1 and dense BF16 DMAD on matched requests. Two clips are only a functional check; they do not support a quality or speed claim. Use the benchmark and held-out evaluation fixtures in that checkout for larger comparisons. Check that the named scripts and fixtures exist in the checkout before running: this node repository does not contain them.
 
 The benchmark can select BF16, FP8 E4M3FN storage, fused NVFP4 MLP, INT8 ConvRot, and VSA attention routes. These labels describe different parts of the model:
 
@@ -42,4 +42,4 @@ For memory comparisons, keep precision and attention selection explicit. For com
 
 ## Status
 
-Earlier benchmark notes reported load and timing checks for INT8 ConvRot + NVFP4 MLP on an RTX 5090. Human quality review and comparison of DMAD's gate-quality behavior with B1 remain open. The report and receipts are not in this checkout, so inspect them in the matching ComfyStream checkout before relying on those results. No speed or quality qualification is claimed here.
+Earlier benchmark notes reported load and timing checks for INT8 ConvRot + NVFP4 MLP on an RTX 5090. Human quality review and comparison of DMAD's gate-quality behavior with B1 remain open. The report and receipts are not included here, so inspect them in the checkout containing the benchmark scripts before relying on those results. No speed or quality qualification is claimed here.

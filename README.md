@@ -21,9 +21,8 @@ git clone https://github.com/Comfy-Org/comfystreamerh3.git
 
 The managed runtime targets Linux with an NVIDIA GPU, Python 3.12, CUDA 13
 PyTorch, matching TorchVision and TorchAudio builds, and `comfy-kitchen` 0.2.34.
-ComfyStream's [build spec](https://github.com/Comfy-Org/comfystreamer/blob/main/deploy/comfy-build-shared-obs.yaml)
-pins the runtime and model assets. The node repository does not include model
-weights.
+The build configuration pins the runtime and model assets. The node repository
+does not include model weights.
 
 | Model | ComfyUI folder | Managed build filename |
 |---|---|---|
@@ -48,12 +47,28 @@ weights.
 For a minimal text-to-video graph with model setup and exact socket connections,
 see the [Quick start](QUICKSTART.md).
 
+## Interactive basic demo
+
+With this custom node installed in a ready Comfy Platform deployment, start
+the local prompt page from this repository:
+
+```bash
+python3 examples/basic_demo.py --platform
+```
+
+It opens `http://127.0.0.1:8765` and submits the graph from
+[`examples/basic_text_to_video_api.json`](examples/basic_text_to_video_api.json)
+through the logged-in Comfy CLI. It discovers ready deployments across the
+workspace, matches the RTX 5090 and RTX 6000 Pro profiles, and defaults to the
+GPU it finds. The other resolution remains selectable when a matching ready
+GPU is available. Omit `--platform` to use local ComfyUI, or set `COMFYUI_URL`
+/ pass `--comfy-url` when its address differs from `http://127.0.0.1:8188`.
+
 ## Live throughput and sample clips
 
 On one RTX 5090, a warm 448×256 run produced two 15.08-second clips in a
 median **23.51 seconds** across 11 jobs: **1.28× real time**. The run used
-four-step VSA. See the
-[ComfyStreamer benchmark and method](https://github.com/Comfy-Org/comfystreamer/blob/main/benchmark-results/live-threegpu-lium-20261004/RESULTS.md).
+four-step VSA.
 
 These four 15-second clips use the prompt “Will Smith eating spaghetti”; each
 uses a different visual style. They are examples, not the throughput runs
