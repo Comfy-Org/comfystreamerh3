@@ -22,17 +22,13 @@ git clone https://github.com/Comfy-Org/comfystreamerh3.git
 
 ## Continuous live viewer
 
-To run the continuous HLS viewer with the resolution picker, launch the
-continuous demo instead:
+For continuous HLS playback instead of one clip per prompt, run:
 
 ```bash
 python3 examples/continuous_demo.py
 ```
 
-It uses the logged-in Comfy CLI to find ready workspace deployments, opens the
-existing GPU endpoint with a live prompt UI, and keeps the video stream
-running as new clips are generated. The picker defaults to the available GPU
-profile. This uses the ComfyStreamer runtime checkout beside this repository.
+Requires a ready Comfy Platform GPU and the sibling `../comfystream` checkout.
 
 ## Deploy to the Comfy Developer Platform
 
