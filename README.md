@@ -28,7 +28,8 @@ weights.
 | Model | ComfyUI folder | Managed build filename |
 |---|---|---|
 | FastH3 checkpoint | `models/diffusion_models/` | `fastvideo_fasth3_8step_v2_pruned_int8_convrot.safetensors` |
-| Text encoder | `models/text_encoders/` | `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` |
+| Text encoder | `models/text_encoders/` | `qwen3vl_4b_fp8_scaled.safetensors` |
+| ClipProj MLP | `models/clip_projections/` | `mmh3-4b-ClipProj-v3.1-mlp.safetensors` |
 | Audio VAE | `models/vae/` | `minimax_h3_audio_vae_fp32.safetensors` |
 | Video VAE | `models/vae/` | `minimax_h3_video_vae_int8_convrot.safetensors` |
 
@@ -46,6 +47,24 @@ weights.
 
 For a minimal text-to-video graph with model setup and exact socket connections,
 see the [Quick start](QUICKSTART.md).
+
+## Live throughput and sample clips
+
+On one RTX 5090, a warm 448×256 run produced two 15.08-second clips in a
+median **23.51 seconds** across 11 jobs: **1.28× real time**. The run used
+four-step VSA. See the
+[ComfyStreamer benchmark and method](https://github.com/Comfy-Org/comfystreamer/blob/main/benchmark-results/live-threegpu-lium-20261004/RESULTS.md).
+
+These four 15-second clips use the prompt “Will Smith eating spaghetti”; each
+uses a different visual style. They are examples, not the throughput runs
+above. Output: 448×256, 24 fps.
+
+| Style | Clip |
+|---|---|
+| Photorealistic | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/photorealistic.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/photorealistic.preview.png" alt="Photorealistic Will Smith eating spaghetti; open clip" width="240"></a> |
+| Anime | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/anime.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/anime.preview.png" alt="Anime-style Will Smith eating spaghetti; open clip" width="240"></a> |
+| Stylized 3D | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/stylized-3d.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/stylized-3d.preview.png" alt="Stylized 3D Will Smith eating spaghetti; open clip" width="240"></a> |
+| Watercolor | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/watercolor.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/watercolor.preview.png" alt="Watercolor Will Smith eating spaghetti; open clip" width="240"></a> |
 
 ## Deploy to the Comfy Developer Platform
 

@@ -1,0 +1,308 @@
+{
+  "started_at_utc": "2026-10-06T19:43:33.772723+00:00",
+  "gpu": {
+    "model": "NVIDIA GeForce RTX 5090",
+    "vram_gb": 32,
+    "driver": "580.126.16"
+  },
+  "gpu_vram_bytes": 33660010496,
+  "comfyui_version": "0.36.0",
+  "pytorch_version": "2.14.0+cu130",
+  "workflow": "examples/basic_text_to_video_api.json",
+  "preset": "fp4-mlp-fused-fasth3-v2-4step-vsa20-kitchen034-b1",
+  "encoder": "qwen3vl_4b_fp8_scaled.safetensors + mmh3-4b-ClipProj-v3.1-mlp.safetensors",
+  "resolution": "448x256",
+  "frames": 362,
+  "fps": 24,
+  "seed": 42424242,
+  "results": [
+    {
+      "style": "photorealistic",
+      "prompt": "Will Smith is seated at a small restaurant table with a plate of spaghetti. He lifts noodles on a fork, twirls them, takes a bite, chews naturally, and smiles. Medium close-up from across the table, steady single-take camera, warm restaurant lighting, uncluttered background, subtle natural movement. No dialogue, text, logos, or cuts. Photorealistic live-action film; natural skin detail, realistic pasta and sauce, warm tungsten light.",
+      "prompt_id": "b7e2dfbb-1287-449a-85b2-4059ce69210a",
+      "wall_seconds_submit_to_mp4": 17.482,
+      "execution_seconds_from_comfy_events": 16.884,
+      "fast_h3_sample_to_finalized_mp4_ms": 10860.106583684683,
+      "sampling_ms": 5775.1938961446285,
+      "reported_gpu": "NVIDIA GeForce RTX 5090",
+      "reported_fps": 24.0,
+      "reported_frames": 362,
+      "reported_resolution": [
+        448,
+        256
+      ],
+      "codec_and_probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 448,
+            "height": 256,
+            "avg_frame_rate": "24/1",
+            "duration": "15.083333",
+            "nb_frames": "362"
+          }
+        ],
+        "format": {
+          "duration": "15.083333"
+        }
+      },
+      "file": "photorealistic.mp4",
+      "file_bytes": 1549994,
+      "media_probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 448,
+            "height": 256,
+            "avg_frame_rate": "24/1",
+            "nb_frames": "362"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2,
+            "avg_frame_rate": "0/0",
+            "nb_frames": "651"
+          }
+        ],
+        "format": {
+          "duration": "15.083333"
+        }
+      },
+      "effective_fps_sample_to_finalized": 33.33,
+      "realtime_factor_sample_to_finalized": 1.389
+    },
+    {
+      "style": "anime",
+      "prompt": "Will Smith is seated at a small restaurant table with a plate of spaghetti. He lifts noodles on a fork, twirls them, takes a bite, chews naturally, and smiles. Medium close-up from across the table, steady single-take camera, warm restaurant lighting, uncluttered background, subtle natural movement. No dialogue, text, logos, or cuts. Hand-drawn 2D anime; clean ink outlines, expressive cel shading, rich colors, fluid character animation.",
+      "prompt_id": "82638eac-aeb8-4b09-8435-d5a31fa997b4",
+      "wall_seconds_submit_to_mp4": 17.375,
+      "execution_seconds_from_comfy_events": 16.853,
+      "fast_h3_sample_to_finalized_mp4_ms": 10743.741204962134,
+      "sampling_ms": 5690.98586961627,
+      "reported_gpu": "NVIDIA GeForce RTX 5090",
+      "reported_fps": 24.0,
+      "reported_frames": 362,
+      "reported_resolution": [
+        448,
+        256
+      ],
+      "codec_and_probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 448,
+            "height": 256,
+            "avg_frame_rate": "24/1",
+            "duration": "15.083333",
+            "nb_frames": "362"
+          }
+        ],
+        "format": {
+          "duration": "15.083333"
+        }
+      },
+      "file": "anime.mp4",
+      "file_bytes": 1610088,
+      "media_probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 448,
+            "height": 256,
+            "avg_frame_rate": "24/1",
+            "nb_frames": "362"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2,
+            "avg_frame_rate": "0/0",
+            "nb_frames": "651"
+          }
+        ],
+        "format": {
+          "duration": "15.083333"
+        }
+      },
+      "effective_fps_sample_to_finalized": 33.69,
+      "realtime_factor_sample_to_finalized": 1.404
+    },
+    {
+      "style": "stylized-3d",
+      "prompt": "Will Smith is seated at a small restaurant table with a plate of spaghetti. He lifts noodles on a fork, twirls them, takes a bite, chews naturally, and smiles. Medium close-up from across the table, steady single-take camera, warm restaurant lighting, uncluttered background, subtle natural movement. No dialogue, text, logos, or cuts. High-quality stylized 3D animation; expressive character, soft global illumination, tactile table and food materials.",
+      "prompt_id": "0a990de3-65b3-449b-9582-d51d597c0ecd",
+      "wall_seconds_submit_to_mp4": 17.387,
+      "execution_seconds_from_comfy_events": 16.852,
+      "fast_h3_sample_to_finalized_mp4_ms": 10805.002162232995,
+      "sampling_ms": 5691.912500187755,
+      "reported_gpu": "NVIDIA GeForce RTX 5090",
+      "reported_fps": 24.0,
+      "reported_frames": 362,
+      "reported_resolution": [
+        448,
+        256
+      ],
+      "codec_and_probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 448,
+            "height": 256,
+            "avg_frame_rate": "24/1",
+            "duration": "15.083333",
+            "nb_frames": "362"
+          }
+        ],
+        "format": {
+          "duration": "15.083333"
+        }
+      },
+      "file": "stylized-3d.mp4",
+      "file_bytes": 1467490,
+      "media_probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 448,
+            "height": 256,
+            "avg_frame_rate": "24/1",
+            "nb_frames": "362"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2,
+            "avg_frame_rate": "0/0",
+            "nb_frames": "651"
+          }
+        ],
+        "format": {
+          "duration": "15.083333"
+        }
+      },
+      "effective_fps_sample_to_finalized": 33.5,
+      "realtime_factor_sample_to_finalized": 1.396
+    },
+    {
+      "style": "watercolor",
+      "prompt": "Will Smith is seated at a small restaurant table with a plate of spaghetti. He lifts noodles on a fork, twirls them, takes a bite, chews naturally, and smiles. Medium close-up from across the table, steady single-take camera, warm restaurant lighting, uncluttered background, subtle natural movement. No dialogue, text, logos, or cuts. Watercolor-and-gouache animation on textured paper; visible brushwork, soft pigment blooms, gentle storybook palette.",
+      "prompt_id": "47c76343-d6ff-4c3d-8402-2d449d60c859",
+      "wall_seconds_submit_to_mp4": 17.273,
+      "execution_seconds_from_comfy_events": 16.632,
+      "fast_h3_sample_to_finalized_mp4_ms": 10833.87896604836,
+      "sampling_ms": 5690.133119001985,
+      "reported_gpu": "NVIDIA GeForce RTX 5090",
+      "reported_fps": 24.0,
+      "reported_frames": 362,
+      "reported_resolution": [
+        448,
+        256
+      ],
+      "codec_and_probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 448,
+            "height": 256,
+            "avg_frame_rate": "24/1",
+            "duration": "15.083333",
+            "nb_frames": "362"
+          }
+        ],
+        "format": {
+          "duration": "15.083333"
+        }
+      },
+      "file": "watercolor.mp4",
+      "file_bytes": 1726362,
+      "media_probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 448,
+            "height": 256,
+            "avg_frame_rate": "24/1",
+            "nb_frames": "362"
+          },
+          {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "sample_rate": "44100",
+            "channels": 2,
+            "avg_frame_rate": "0/0",
+            "nb_frames": "651"
+          }
+        ],
+        "format": {
+          "duration": "15.083333"
+        }
+      },
+      "effective_fps_sample_to_finalized": 33.41,
+      "realtime_factor_sample_to_finalized": 1.392
+    }
+  ],
+  "completed_at_utc": "2026-10-06T19:44:45.505751+00:00",
+  "software": {
+    "comfyui": "0.36.0",
+    "pytorch": "2.14.0+cu130",
+    "cuda_runtime": "13.0",
+    "comfy_kitchen": "0.2.34"
+  },
+  "run_method": "Four sequential one-shot clips on a warmed single-RTX-5090 worker, empty ComfyUI queue at start; same scene, seed, graph and output contract; only style suffix varied.",
+  "throughput": {
+    "metric": "ComfyStream FastH3 report timing_ms.sample_to_finalized_mp4",
+    "clip_count": 4,
+    "total_output_video_seconds": 60.333,
+    "total_sample_to_finalized_seconds": 43.243,
+    "mean_sample_to_finalized_seconds": 10.811,
+    "effective_fps": 33.49,
+    "realtime_factor": 1.395,
+    "video_seconds_per_minute": 83.71,
+    "comfyui_execution_window_seconds": 70.465,
+    "comfyui_execution_window_realtime": 0.856
+  },
+  "active_optimizations": [
+    "B1 4-step VSA-20",
+    "50 NVFP4 fused MLP blocks",
+    "QKV torch.compile",
+    "fused FF/QK/RoPE decoder",
+    "GPU decode with finalized-tile streaming",
+    "H.264 NVENC output"
+  ],
+  "prior_comfystream_reference": {
+    "profile": "FastH3 B1 base",
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "resolution": "512x320",
+    "frames": 362,
+    "fps": 24,
+    "clip_seconds": 15.083333333333334,
+    "samples": 24,
+    "median_sample_to_finalized_seconds": 13.22331149600359,
+    "effective_fps": 27.38,
+    "realtime_factor": 1.141
+  }
+}

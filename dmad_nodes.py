@@ -305,8 +305,8 @@ class ComfyStreamerH3DmadLoader:
         return {
             "required": {
                 "checkpoint": (checkpoints,),
-                "text_encoder": (["qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors"],
-                                 {"default": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors"}),
+                "text_encoder": (["qwen3vl_4b_fp8_scaled.safetensors"],
+                                 {"default": "qwen3vl_4b_fp8_scaled.safetensors"}),
                 "video_vae": (["minimax_h3_video_vae_int8_convrot.safetensors"],
                               {"default": "minimax_h3_video_vae_int8_convrot.safetensors"}),
                 "audio_vae": (["minimax_h3_audio_vae_fp32.safetensors"],
@@ -330,7 +330,7 @@ class ComfyStreamerH3DmadLoader:
     def IS_CHANGED(cls, checkpoint, variant="lora_critic", precision_mode="bf16",
                    attention_mode="dense", keep_percent=100.0,
                    vram_reserve_gib=DEFAULT_DMAD_VRAM_RESERVE_GIB,
-                   text_encoder="qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+                   text_encoder="qwen3vl_4b_fp8_scaled.safetensors",
                    video_vae="minimax_h3_video_vae_int8_convrot.safetensors",
                    audio_vae="minimax_h3_audio_vae_fp32.safetensors",
                    vae_precision_policy="established", kitchen_vae_fusions=False,
@@ -360,7 +360,7 @@ class ComfyStreamerH3DmadLoader:
     def load(self, checkpoint, variant="lora_critic", precision_mode="bf16",
              attention_mode="dense", keep_percent=100.0,
              vram_reserve_gib=DEFAULT_DMAD_VRAM_RESERVE_GIB,
-             text_encoder="qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+             text_encoder="qwen3vl_4b_fp8_scaled.safetensors",
              video_vae="minimax_h3_video_vae_int8_convrot.safetensors",
              audio_vae="minimax_h3_audio_vae_fp32.safetensors",
              vae_precision_policy="established", kitchen_vae_fusions=False,
