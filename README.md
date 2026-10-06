@@ -81,10 +81,20 @@ files. A local ComfyUI install or GPU is not required to build or deploy it.
    ```
 
    This replaces the pack directory with the files from this repository.
-2. Make the ComfyStream build spec include the model assets listed above. The
-   build spec controls which weights are included. Update its model check to
-   match too: the current ComfyStream helper still expects the 32B text encoder,
-   while this node uses Qwen 4B and ClipProj.
+2. Add the pinned ClipProj custom node to the existing `customNodes` list in
+   `comfystream/deploy/comfy-build-shared-obs.yaml`:
+
+   ```yaml
+   - gitRef: c01ba8fb8f41b4f2094dbd0b185cdc238fb6134c
+     name: ComfyUI-ClipProj
+     repository: https://github.com/nicolab28/ComfyUI-ClipProj
+   ```
+
+   The build installs declared custom nodes automatically. The manual clone in
+   [Quick start](QUICKSTART.md) is only for local ComfyUI. Also make the build
+   spec include the model assets listed above. Its current ComfyStream
+   preflight still expects the 32B text encoder; update the model list and
+   preflight to match this node's Qwen 4B encoder and ClipProj MLP.
 3. Sign in with the Comfy CLI using an account with Developer Platform access.
    Set these cost limits in the same shell before starting the deployment:
 

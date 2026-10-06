@@ -20,7 +20,8 @@ The script opens the local video page and starts a fresh demo run. Press `Ctrl+C
 
 ## Models
 
-Install the pinned `ComfyUI-ClipProj` node:
+The example uses the `ClipProjApply` node from `ComfyUI-ClipProj`. For a local
+ComfyUI install, install that custom node once:
 
 ```bash
 cd ComfyUI/custom_nodes
