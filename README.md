@@ -34,22 +34,6 @@ existing GPU endpoint with a live prompt UI, and keeps the video stream
 running as new clips are generated. The picker defaults to the available GPU
 profile. This uses the ComfyStreamer runtime checkout beside this repository.
 
-## Live throughput and sample clips
-
-On one RTX 5090, a warm 448 × 256 run produced two 15.08-second clips in a
-median **23.51 seconds** across 11 jobs: **1.28× real time**. The run used
-four-step VSA.
-
-Four sample clips use the prompt “Will Smith eating spaghetti” in different
-visual styles. Each is 15 seconds at 448 × 256 and 24 fps.
-
-| Style | Clip |
-|---|---|
-| Photorealistic | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/photorealistic.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/photorealistic.preview.png" alt="Photorealistic Will Smith eating spaghetti; open clip" width="240"></a> |
-| Anime | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/anime.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/anime.preview.png" alt="Anime-style Will Smith eating spaghetti; open clip" width="240"></a> |
-| Stylized 3D | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/stylized-3d.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/stylized-3d.preview.png" alt="Stylized 3D Will Smith eating spaghetti; open clip" width="240"></a> |
-| Watercolor | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/watercolor.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/watercolor.preview.png" alt="Watercolor Will Smith eating spaghetti; open clip" width="240"></a> |
-
 ## Deploy to the Comfy Developer Platform
 
 Sign up for a [Comfy plan](https://comfy.org/pricing/) to deploy.
@@ -96,6 +80,22 @@ is deleted:
 ```sh
 comfy deploy delete .
 ```
+
+## Live throughput and sample clips
+
+On one RTX 5090, a warm 448 × 256 run produced two 15.08-second clips in a
+median **23.51 seconds** across 11 jobs: **1.28× real time**. The run used
+four-step VSA.
+
+Four sample clips use the prompt “Will Smith eating spaghetti” in different
+visual styles. Each is 15 seconds at 448 × 256 and 24 fps.
+
+| Style | Clip |
+|---|---|
+| Photorealistic | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/photorealistic.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/photorealistic.preview.png" alt="Photorealistic Will Smith eating spaghetti; open clip" width="240"></a> |
+| Anime | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/anime.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/anime.preview.png" alt="Anime-style Will Smith eating spaghetti; open clip" width="240"></a> |
+| Stylized 3D | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/stylized-3d.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/stylized-3d.preview.png" alt="Stylized 3D Will Smith eating spaghetti; open clip" width="240"></a> |
+| Watercolor | <a href="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/watercolor.mp4"><img src="benchmark-results/fast-h3-15s-rtx5090-2026-10-06/watercolor.preview.png" alt="Watercolor Will Smith eating spaghetti; open clip" width="240"></a> |
 
 ## Runtime and models
 
