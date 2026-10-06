@@ -20,30 +20,18 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/Comfy-Org/comfystreamerh3.git
 ```
 
-## Run the continuous demo
+## Deploy to the Comfy Developer Platform
 
-Install the Comfy CLI, sign in, and make sure `ffmpeg` is on your `PATH`:
+Sign up for a [Comfy plan](https://comfy.org/pricing/) to deploy.
+
+Install the Comfy CLI and sign in:
 
 ```sh
 python3 -m pip install -U comfy-cli
 comfy cloud login
 ```
 
-The demo finds an already-ready RTX 5090 or RTX 6000 Pro deployment in your
-workspace. It does not create or deploy a GPU. From the repository root, run:
-
-```sh
-python3 examples/continuous_demo.py
-```
-
-The live page includes the Will Smith prompt by default and a resolution picker.
-It starts generating continuously and lets you queue a new prompt while a clip
-finishes.
-
-## Create a Comfy Platform deployment (optional)
-
-If your workspace does not already have a ready GPU deployment, sign up for a
-[Comfy plan](https://comfy.org/pricing/) and create one from the repository root:
+From the repository root:
 
 ```sh
 comfy build validate . --custom-nodes-dir .
@@ -57,10 +45,18 @@ With `--min 0`, the deployment scales to zero when idle, avoiding ongoing GPU
 charges at the cost of a cold start for the next job. Staged model storage is
 still billed while any deployment of the Build exists in a region.
 
-Once the deployment is ready, the continuous demo command above will discover
-it automatically. Delete only deployments you created when you are done to
-remove their endpoints. Builds and releases are free to keep. Storage billing
-ends shortly after the Build's last deployment in each region is deleted:
+After the deployment is ready, start the continuous HLS viewer with the prompt
+field and resolution picker:
+
+```sh
+python3 examples/continuous_demo.py
+```
+
+The continuous viewer prompt defaults to “Will Smith eating spaghetti.”
+
+Delete each deployment when you are done to remove its endpoint. Builds and
+releases are free to keep. Storage billing ends shortly after the Build's last
+deployment in each region is deleted:
 
 ```sh
 comfy deploy delete .
