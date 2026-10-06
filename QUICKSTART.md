@@ -1,6 +1,6 @@
-# Quick start: make one H3 video
+# Quick start: ComfyStream's fast H3 path
 
-This is the smallest text-to-video graph using the ComfyStreamerH3 FastH3 nodes. It uses ComfyUI's standard model loaders and guider, then this pack's loader, sampler, decoders, and output node. It omits image references and experimental settings.
+This small text-to-video graph follows the optimized FastH3 path used by ComfyStream's direct provider. It uses the B1 four-step VSA-20 preset at 448×256 for 362 frames (about 15 seconds at 24 fps), with QKV compilation, fused NVFP4 MLP when the GPU supports it, tiled GPU decode, and NVENC output. It leaves experimental attention and producer flags off.
 
 ## Requirements
 
@@ -27,7 +27,7 @@ curl -X POST http://127.0.0.1:8188/prompt \
   --data-binary @examples/basic_text_to_video_api.json
 ```
 
-The response includes a `prompt_id` for queue/history lookup. The MP4 is saved under `ComfyUI/output/FastH3/`. To build the same graph on the canvas instead, add and connect the nodes below.
+The response includes a `prompt_id` for queue/history lookup. The MP4 is saved under `ComfyUI/output/comfystream/quickstart/`. To build the same graph on the canvas instead, add and connect the nodes below.
 
 ## Add these nodes
 
@@ -42,9 +42,9 @@ Set the built-in loaders:
 - First `VAELoader` (video): choose `minimax_h3_video_vae_int8_convrot.safetensors`.
 - Second `VAELoader` (audio): choose `minimax_h3_audio_vae_fp32.safetensors`.
 
-On `ComfyStreamerH3 Optimized Loader`, leave the default B1 preset and other defaults selected. This is the four-step V2 preset with VSA-20 attention. Its default QKV `torch.compile` path is enabled; fused NVFP4 MLP conversion is attempted automatically on supported GPUs and falls back to the standard MLP otherwise. The selected precision and any fallback are recorded in the profile/report. The Qwen text encoder is separately loaded from the `...nvfp4_awq.safetensors` file above.
+On `ComfyStreamerH3 Optimized Loader`, leave the default B1 preset and other defaults selected. The provider's fast settings use width `448`, height `256`, length `362`, and 24 fps; the ready-to-run API prompt sets these values explicitly. B1 uses four-step V2 sampling and VSA-20 attention. QKV `torch.compile` is enabled; fused NVFP4 MLP conversion is attempted automatically on supported GPUs and falls back to the standard MLP otherwise. The profile/report records the selected precision and any fallback. The default text encoder is `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` with type `minimax`; ComfyStream's 4B FP8 + ClipProj profile is an optional alternative.
 
-This example uses the pack's core B1 path, not every available optimization. It leaves experimental OMEGA flags, native masked retile, scratch pooling, and candidate attention backends off. On `ComfyStreamerH3 Image to Video`, enter a prompt, set width to `512`, height to `320`, and length to `124` frames. H3 frame lengths follow `17 × n + 5`; 124 frames is about 5.2 seconds at 24 fps. The frame rule is also used in [Comfy-Org's native H3 workflow](https://github.com/Comfy-Org/workflow_templates/blob/main/templates/video_minimax_h3_i2v.json).
+The decoder settings follow the fast provider path: finalized-tile streaming, output on GPU, overlapping audio decode, final-frame retention, fused FF/QK/RoPE decode, and NVENC output. OMEGA flags, native masked retile, scratch-pool experiments, and candidate attention backends remain off. H3 frame lengths follow `17 × n + 5`; 362 frames is a valid 15-second-class clip. The same frame rule is used in [Comfy-Org's native H3 workflow](https://github.com/Comfy-Org/workflow_templates/blob/main/templates/video_minimax_h3_i2v.json).
 
 ## Connect the nodes
 
@@ -61,14 +61,15 @@ This example uses the pack's core B1 path, not every available optimization. It 
 | Image to Video: `latent` | Sampler: `latent_image` |
 | Basic Guider: `GUIDER` | Sampler: `conditioning` |
 | Sampler: `output` | Video Decode: `samples`; Audio Decode: `samples` |
-| Sampler: `report` | Video Decode: `report`; Audio Decode: `report` |
+| Sampler: `report` | Video Decode: `report` |
 | Video Decode: `images` | Output: `images` |
-| Video Decode: `report` | Output: `report` |
+| Video Decode: `report` | Audio Decode: `report` |
+| Audio Decode: `report` | Output: `report` |
 | Audio Decode: `audio` | Output: `audio` |
 
-Set the Sampler's `run_nonce` to a non-empty label such as `quickstart-001`; change it for a new run. Leave the other sampler, decoder, and output settings at their defaults. Set Output's `filename_prefix` to `FastH3/quickstart` if desired.
+Set the Sampler's `run_nonce` to a non-empty label such as `quickstart-001`; change it for a new run. The API example uses `comfystream/quickstart` as its output prefix.
 
-The output node writes an MP4 under ComfyUI's output folder and exposes the video preview. The video decoder's `audio_vae` connection starts the audio decode alongside video decoding; the separate Audio Decode node supplies the audio track to Output.
+The output node writes an MP4 under ComfyUI's output folder and exposes the video preview. The video decoder's `audio_vae` connection starts audio decoding alongside video decoding; Audio Decode passes the updated report and audio track to Output. ComfyStream's direct provider wraps this same optimized graph with progressive clip delivery; submitting the example directly to `/prompt` returns a completed MP4.
 
 ## If it does not start
 

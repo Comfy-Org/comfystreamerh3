@@ -1,9 +1,14 @@
 {
   "prompt": {
     "1": {
-      "class_type": "ComfyStreamerH3OptimizedLoader",
+      "class_type": "FastH3OptimizedLoader",
       "inputs": {
-        "preset": "fp4-mlp-fused-fasth3-v2-4step-vsa20-kitchen034-b1"
+        "preset": "fp4-mlp-fused-fasth3-v2-4step-vsa20-kitchen034-b1",
+        "attention_option": "vsa",
+        "token_aug": 0,
+        "vae_precision_policy": "established",
+        "compile_transformer": true,
+        "compile_transformer_scope": "qkv"
       }
     },
     "2": {
@@ -32,9 +37,9 @@
         "vae": ["3", 0],
         "profile": ["1", 3],
         "prompt": "A small red paper boat drifts along a quiet stream at golden hour. Gentle ripples move past the boat; leaves sway softly on the bank. Natural light, steady camera. Soft water sounds and birdsong.",
-        "width": 512,
-        "height": 320,
-        "length": 124
+        "width": 448,
+        "height": 256,
+        "length": 362
       }
     },
     "6": {
@@ -45,7 +50,7 @@
       }
     },
     "7": {
-      "class_type": "ComfyStreamerH3BenchmarkSampler",
+      "class_type": "FastH3BenchmarkSampler",
       "inputs": {
         "model": ["1", 0],
         "sampler": ["1", 1],
@@ -55,34 +60,48 @@
         "seed": 42424242,
         "run_nonce": "basic-text-video-001",
         "profile": ["1", 3],
-        "mode": "normal"
+        "mode": "normal",
+        "benchmark_output_backend": "nvenc"
       }
     },
     "8": {
-      "class_type": "ComfyStreamerH3BenchmarkVAEDecode",
+      "class_type": "FastH3BenchmarkVAEDecode",
       "inputs": {
         "samples": ["7", 0],
         "vae": ["3", 0],
         "report": ["7", 1],
-        "audio_vae": ["4", 0]
+        "audio_vae": ["4", 0],
+        "output_on_gpu": true,
+        "decoder_mode": "fused_ff_qk_rope",
+        "overlap_output": true,
+        "stream_finalized_tiles": true,
+        "retain_final_frame_only": true,
+        "encode_backend": "nvenc",
+        "stream_fps": 24,
+        "tile_batch": 3,
+        "cuda_sync": false,
+        "vae_precision_policy": "established",
+        "kitchen_vae_fusions": false,
+        "decoder_cuda_graph": false
       }
     },
     "9": {
-      "class_type": "ComfyStreamerH3BenchmarkVAEDecodeAudio",
+      "class_type": "FastH3BenchmarkVAEDecodeAudio",
       "inputs": {
         "samples": ["7", 0],
         "vae": ["4", 0],
-        "report": ["7", 1]
+        "report": ["8", 1]
       }
     },
     "10": {
-      "class_type": "ComfyStreamerH3BenchmarkOutput",
+      "class_type": "FastH3BenchmarkOutput",
       "inputs": {
         "images": ["8", 0],
-        "report": ["8", 1],
-        "filename_prefix": "FastH3/quickstart",
+        "report": ["9", 1],
+        "filename_prefix": "comfystream/quickstart",
         "fps": 24,
-        "audio": ["9", 0]
+        "audio": ["9", 0],
+        "output_backend": "nvenc"
       }
     }
   }
