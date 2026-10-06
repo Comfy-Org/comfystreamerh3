@@ -274,7 +274,7 @@
   },
   "run_method": "Four sequential one-shot clips on a warmed single-RTX-5090 worker, empty ComfyUI queue at start; same scene, seed, graph and output contract; only style suffix varied.",
   "throughput": {
-    "metric": "ComfyStream FastH3 report timing_ms.sample_to_finalized_mp4",
+    "metric": "sample_to_finalized_mp4",
     "clip_count": 4,
     "total_output_video_seconds": 60.333,
     "total_sample_to_finalized_seconds": 43.243,
@@ -292,17 +292,5 @@
     "fused FF/QK/RoPE decoder",
     "GPU decode with finalized-tile streaming",
     "H.264 NVENC output"
-  ],
-  "prior_comfystream_reference": {
-    "profile": "FastH3 B1 base",
-    "gpu": "NVIDIA GeForce RTX 5090",
-    "resolution": "512x320",
-    "frames": 362,
-    "fps": 24,
-    "clip_seconds": 15.083333333333334,
-    "samples": 24,
-    "median_sample_to_finalized_seconds": 13.22331149600359,
-    "effective_fps": 27.38,
-    "realtime_factor": 1.141
-  }
+  ]
 }

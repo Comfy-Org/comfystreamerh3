@@ -96,7 +96,7 @@ def read_dmad_artifact(path: str | os.PathLike[str], *, variant: str) -> tuple[P
         manifest = json.loads(sidecar.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise DmadModelError(f"DMAD checkpoint manifest is missing or invalid: {exc}") from exc
-    if manifest.get("format") != "comfystream-dmad-comfy-h3-v1":
+    if manifest.get("format") != "comfystreamerh3-dmad-comfy-h3-v1":
         raise DmadModelError("Unsupported DMAD Comfy checkpoint manifest")
     if variant not in _SUPPORTED_VARIANTS or manifest.get("variant") != variant:
         raise DmadModelError("Selected DMAD variant does not match the checkpoint manifest")
@@ -235,7 +235,7 @@ def _weight_storage_evidence(backbone, *, require_fp8: bool = False) -> dict:
 
 def _software_identity(manifest: dict, precision_mode: str, compile_transformer: bool = False) -> str:
     return "|".join((
-        "comfystream-dmad-h3/v1",
+        "comfystreamerh3-dmad-h3/v1",
         str(manifest.get("dmad_merge_manifest_sha256", "")),
         str(manifest.get("base_revision", "")),
         precision_mode,
@@ -292,7 +292,7 @@ class ComfyStreamerH3DmadLoader:
     RETURN_TYPES = ("MODEL", "H3_PROFILE")
     RETURN_NAMES = ("model", "profile")
     FUNCTION = "load"
-    CATEGORY = "ComfyStream/DMAD"
+    CATEGORY = "ComfyStreamerH3/DMAD"
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -580,7 +580,7 @@ class ComfyStreamerH3DmadSampling:
     RETURN_TYPES = ("MODEL", "SAMPLER", "SIGMAS", "DMAD_NOISE")
     RETURN_NAMES = ("model", "sampler", "sigmas", "noise_stream")
     FUNCTION = "create"
-    CATEGORY = "ComfyStream/DMAD"
+    CATEGORY = "ComfyStreamerH3/DMAD"
 
     @classmethod
     def INPUT_TYPES(cls):

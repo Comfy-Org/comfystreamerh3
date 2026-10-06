@@ -50,7 +50,7 @@ from .model_provenance import (
 from .pdmd_lora import PDMD_2STEP_LABEL, PDMD_2STEP_VARIANT
 from .runtime import DEFAULT_PRESET, PRESETS, preset_manifest, require_b1_runtime, runtime_identity
 
-_FUSED_MLP_ENV = "COMFYSTREAM_H3_FUSED_MLP"
+_FUSED_MLP_ENV = "COMFYSTREAMERH3_FUSED_MLP"
 
 
 def fused_mlp_enabled_from_env() -> bool:
@@ -369,9 +369,9 @@ class ComfyStreamerH3OptimizedLoader:
                 kitchen_version=str(kitchen_version()),
                 kitchen_wheel_sha256=KITCHEN_WHEEL_SHA256,
                 engine=(
-                    "comfystream-fasth3-upstream-gates-v2+torch-compile-boundary-v11-"
+                    "comfystreamerh3-fasth3-upstream-gates-v2+torch-compile-boundary-v11-"
                     + compile_transformer_scope
-                    if compile_transformer else "comfystream-fasth3-upstream-gates-v2"
+                    if compile_transformer else "comfystreamerh3-fasth3-upstream-gates-v2"
                 ) + ("+standard-mlp-fallback-v1" if not fused_mlp_enabled else ""),
                 model_variant=PDMD_2STEP_VARIANT if use_pdmd else "base",
             ),

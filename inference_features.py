@@ -22,13 +22,13 @@ FLAGS = ('share_timestep_silu', 'cache_inference_rope', 'cache_text_tag_runs',
 
 def _eager_if_transformer_compiled(model, function):
     """Keep request-scoped Python cache bookkeeping outside a compiled graph."""
-    if not getattr(model, '_comfystream_compile_forward', False):
+    if not getattr(model, '_comfystreamerh3_compile_forward', False):
         return function
     disable = getattr(getattr(torch, '_dynamo', None), 'disable', None)
     if not callable(disable):
         raise TypeError('compiled inference features require torch._dynamo.disable')
     wrapped = disable(function)
-    report = getattr(model, '_comfystream_compile_report', None)
+    report = getattr(model, '_comfystreamerh3_compile_report', None)
     if isinstance(report, dict):
         helpers = report.setdefault('request_scoped_eager_helpers', [])
         name = getattr(function, '__name__', type(function).__name__)

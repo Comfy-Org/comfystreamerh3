@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * ComfyStream modification: standalone Torch NVFP4 control over Anemoi
+ * Project modification: standalone Torch NVFP4 control over Anemoi
  * 270ddf8c3f0a43be47cf586873e7758bc76b822d's SM120 Q64 launcher. The
  * retained vendor implementation attributes SpargeAttention ae5b629ebb41e41f86b3ea2ab5a3283f13ac151a.
  */

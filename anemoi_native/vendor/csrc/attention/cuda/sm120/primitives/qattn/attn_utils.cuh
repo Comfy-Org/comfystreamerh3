@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// Modified by ComfyStream: padding masks use negative infinity so tiny QK
+// Modified for this project: padding masks use negative infinity so tiny QK
 // dequantization scales cannot turn masked slots into nonzero probabilities.
 #pragma once
 #include <math_constants.h>

@@ -120,15 +120,15 @@ def _kitchen_dynamo_patch(torch_module: Any) -> tuple[Any, Any, Any] | None:
     attention = getattr(kitchen_cuda, "sol_attn_chunked", None)
     if not callable(attention):
         raise TypeError("Comfy Kitchen CUDA backend has no callable sol_attn_chunked")
-    if getattr(attention, "_comfystream_dynamo_disabled", False):
-        original_attention = getattr(attention, "_comfystream_original", None)
+    if getattr(attention, "_comfystreamerh3_dynamo_disabled", False):
+        original_attention = getattr(attention, "_comfystreamerh3_original", None)
         if callable(original_attention):
             return kitchen_cuda, original_attention, attention
         return None
     safe_attention = _compile_safe_attention(kitchen_cuda, torch_module)
     eager_attention = dynamo_disable(safe_attention, recursive=False)
-    eager_attention._comfystream_dynamo_disabled = True
-    eager_attention._comfystream_original = attention
+    eager_attention._comfystreamerh3_dynamo_disabled = True
+    eager_attention._comfystreamerh3_original = attention
     return kitchen_cuda, attention, eager_attention
 
 
@@ -221,19 +221,19 @@ def compile_fast_h3_transformer_forward(
     compile_scope = ("diffusion_model.modulation" if compile_modulation else
                      f"diffusion_model.{target_method}" if compile_transformer_body else
                      "diffusion_model.qkv_projections")
-    compiled_method = getattr(transformer, "_comfystream_compile_method", None)
-    if getattr(transformer, "_comfystream_compile_forward", False):
+    compiled_method = getattr(transformer, "_comfystreamerh3_compile_method", None)
+    if getattr(transformer, "_comfystreamerh3_compile_forward", False):
         if compiled_method not in (None, target_method):
             raise RuntimeError("FastH3 diffusion model was compiled with a different method")
-        if getattr(transformer, "_comfystream_allocator_graph_disabled", False) is not disable_comfy_allocator_graph:
+        if getattr(transformer, "_comfystreamerh3_allocator_graph_disabled", False) is not disable_comfy_allocator_graph:
             raise RuntimeError("FastH3 diffusion model was compiled with a different allocator-graph policy")
-        if getattr(transformer, "_comfystream_compile_body", True) is not compile_transformer_body:
+        if getattr(transformer, "_comfystreamerh3_compile_body", True) is not compile_transformer_body:
             raise RuntimeError("FastH3 diffusion model was compiled with a different body policy")
-        if getattr(transformer, "_comfystream_compile_modulation", False) is not compile_modulation:
+        if getattr(transformer, "_comfystreamerh3_compile_modulation", False) is not compile_modulation:
             raise RuntimeError("FastH3 diffusion model was compiled with a different region policy")
-        if getattr(transformer, "_comfystream_emulate_precision_casts", False) is not emulate_precision_casts:
+        if getattr(transformer, "_comfystreamerh3_emulate_precision_casts", False) is not emulate_precision_casts:
             raise RuntimeError("FastH3 diffusion model was compiled with a different precision-cast policy")
-        live_report = getattr(transformer, "_comfystream_compile_report", None)
+        live_report = getattr(transformer, "_comfystreamerh3_compile_report", None)
         if not isinstance(live_report, dict):
             raise RuntimeError("compiled FastH3 model has no live Dynamo receipt")
         live_report["reused"] = True
@@ -330,13 +330,13 @@ def compile_fast_h3_transformer_forward(
                 return outer_forward(*args, **kwargs)
 
         transformer.forward = allocator_safe_forward
-    transformer._comfystream_compile_forward = True
-    transformer._comfystream_compile_method = target_method
-    transformer._comfystream_compile_body = compile_transformer_body
-    transformer._comfystream_compile_modulation = compile_modulation
-    transformer._comfystream_emulate_precision_casts = emulate_precision_casts
-    transformer._comfystream_dynamo_disabled_ops = dynamo_disabled_ops
-    transformer._comfystream_kitchen_patch = kitchen_patch
-    transformer._comfystream_allocator_graph_disabled = disable_comfy_allocator_graph
-    transformer._comfystream_compile_report = compile_report
+    transformer._comfystreamerh3_compile_forward = True
+    transformer._comfystreamerh3_compile_method = target_method
+    transformer._comfystreamerh3_compile_body = compile_transformer_body
+    transformer._comfystreamerh3_compile_modulation = compile_modulation
+    transformer._comfystreamerh3_emulate_precision_casts = emulate_precision_casts
+    transformer._comfystreamerh3_dynamo_disabled_ops = dynamo_disabled_ops
+    transformer._comfystreamerh3_kitchen_patch = kitchen_patch
+    transformer._comfystreamerh3_allocator_graph_disabled = disable_comfy_allocator_graph
+    transformer._comfystreamerh3_compile_report = compile_report
     return compile_report

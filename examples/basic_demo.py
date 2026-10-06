@@ -362,8 +362,16 @@ def _gpu_resolution(gpu_class: object) -> str | None:
 
 
 def _ready_gpu_deployments(deployments: list[object]) -> dict[str, str]:
+    """Return the selected deployment id for each supported GPU profile."""
+    return {
+        resolution: profile["deploymentId"]
+        for resolution, profile in _ready_gpu_profiles(deployments).items()
+    }
+
+
+def _ready_gpu_profiles(deployments: list[object]) -> dict[str, dict[str, Any]]:
     """Pick the most recently updated ready deployment for each supported GPU."""
-    candidates: dict[str, list[tuple[str, str]]] = {"448x256": [], "512x320": []}
+    candidates: dict[str, list[tuple[str, str, str]]] = {"448x256": [], "512x320": []}
     for deployment in deployments:
         if not isinstance(deployment, dict) or deployment.get("status") != "ready":
             continue
@@ -371,13 +379,47 @@ def _ready_gpu_deployments(deployments: list[object]) -> dict[str, str]:
         gpu_class = compute.get("gpuClass") if isinstance(compute, dict) else None
         resolution = _gpu_resolution(gpu_class)
         deployment_id = deployment.get("id")
-        if resolution and isinstance(deployment_id, str) and deployment_id:
-            candidates[resolution].append((str(deployment.get("updatedAt") or ""), deployment_id))
-    return {
-        resolution: max(ready, key=lambda item: item[0])[1]
-        for resolution, ready in candidates.items()
-        if ready
-    }
+        endpoint_url = deployment.get("endpointUrl")
+        if (
+            resolution
+            and isinstance(deployment_id, str)
+            and deployment_id
+            and isinstance(endpoint_url, str)
+            and endpoint_url
+        ):
+            candidates[resolution].append((
+                str(deployment.get("updatedAt") or ""), deployment_id, endpoint_url
+            ))
+    profiles: dict[str, dict[str, Any]] = {}
+    for resolution, ready in candidates.items():
+        if not ready:
+            continue
+        _, deployment_id, endpoint_url = max(ready, key=lambda item: item[0])
+        profiles[resolution] = {
+            "deploymentId": deployment_id,
+            "deploymentUrl": endpoint_url,
+            "width": 448 if resolution == "448x256" else 512,
+            "height": 256 if resolution == "448x256" else 320,
+            "gpuLabel": _gpu_name(resolution),
+        }
+    return profiles
+
+
+def discover_ready_gpu_profiles() -> dict[str, dict[str, Any]]:
+    """Use the logged-in Comfy CLI to discover existing ready workspace GPUs."""
+    result = subprocess.run(
+        ["comfy", "--json", "deploy", "ls", "--workspace", "--status", "ready"],
+        capture_output=True, text=True, timeout=30, check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(_cli_error(result.stdout, result.stderr) or "Comfy Platform discovery failed")
+    envelope = json.loads(result.stdout)
+    if not envelope.get("ok"):
+        raise RuntimeError(_cli_error(result.stdout, result.stderr) or "Comfy Platform discovery failed")
+    deployments = envelope["data"]["deployments"]
+    if not isinstance(deployments, list):
+        raise ValueError("Comfy CLI returned an invalid deployment list")
+    return _ready_gpu_profiles(deployments)
 
 
 def _gpu_name(resolution: str) -> str:

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * ComfyStream modification: bounded, preallocated chunk adaptation of
+ * Project modification: bounded, preallocated chunk adaptation of
  * Anemoi 270ddf8c3f0a43be47cf586873e7758bc76b822d,
  * csrc/attention/cuda/sm120/q128_microscaling_preparation.cu.
  * The donor localizes SageAttention3 d1a57a5 scaled_fp4_quant_permute.

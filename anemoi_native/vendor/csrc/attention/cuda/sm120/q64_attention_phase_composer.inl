@@ -535,7 +535,7 @@
     }
 #endif
 
-    // Modified by ComfyStream: MPA_BLOCK_VALUE_SCALE restores residual scales
+    // Modified for this project: MPA_BLOCK_VALUE_SCALE restores residual scales
     // and represented-P means in the same accumulator/online rescale domain.
     // Phase: INT8
 #if MPA_MIDDLE_INT8

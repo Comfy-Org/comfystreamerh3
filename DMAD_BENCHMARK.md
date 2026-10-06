@@ -1,17 +1,17 @@
 # DMAD benchmark: summary
 
-This is an opt-in experiment for comparing DMAD H3 checkpoints with the FastH3 B1 baseline. It does not change the default profile. This guide assumes DMAD conversion, benchmark scripts, fixtures, and result reports are available in a separate checkout; this node checkout does not contain them. The commands below cannot be run from this repository alone.
+This is an opt-in experiment for comparing DMAD H3 checkpoints with the FastH3 B1 baseline. It does not change the default profile. This repository contains the DMAD custom nodes, but not the conversion scripts, benchmark fixtures, or result reports needed to reproduce the experiment. The commands below require those tools and data to be available in the environment where they are run.
 
 ## Before running
 
 - Use Linux with the compatible ComfyUI Torch, Safetensors, CUDA, and pinned Comfy Kitchen environment.
-- Obtain the MiniMax-H3 base checkpoint and DMAD adapter at the revisions specified by the companion conversion scripts; accept their licenses. The conversion scripts do not download large weights or install packages.
+- Obtain the MiniMax-H3 base checkpoint and DMAD adapter at the revisions specified by the conversion scripts; accept their licenses. The conversion scripts do not download large weights or install packages.
 - Convert the adapter to a statically merged H3 checkpoint. The loader requires the matching base revision/variant, complete modules, expected activation layout, checkpoint hash receipt, and compatible ComfyUI Core commit. Dynamic LoRAs and FastH3 attention gates are not accepted.
 - Keep the generated checkpoint beside its `.safetensors.dmad.json` receipt. Conversion creates a large single Safetensors file; allow enough disk and host memory.
 
 ## Compare checkpoints
 
-From the checkout containing the DMAD benchmark scripts, a small integration smoke test is:
+From an environment containing the DMAD benchmark scripts, a small integration smoke test is:
 
 ```bash
 python3 scripts/benchmark_dmad_h3.py \
@@ -21,7 +21,7 @@ python3 scripts/benchmark_dmad_h3.py \
   --limit 2
 ```
 
-This runs B1 and dense BF16 DMAD on matched requests. Two clips are only a functional check; they do not support a quality or speed claim. Use the benchmark and held-out evaluation fixtures in that checkout for larger comparisons. Check that the named scripts and fixtures exist in the checkout before running: this node repository does not contain them.
+This runs B1 and dense BF16 DMAD on matched requests. Two clips are only a functional check; they do not support a quality or speed claim. Use the benchmark and held-out evaluation fixtures available in that environment for larger comparisons. Check that the named scripts and fixtures are present before running them: this node repository does not contain them.
 
 The benchmark can select BF16, FP8 E4M3FN storage, fused NVFP4 MLP, INT8 ConvRot, and VSA attention routes. These labels describe different parts of the model:
 
@@ -42,4 +42,4 @@ For memory comparisons, keep precision and attention selection explicit. For com
 
 ## Status
 
-Earlier benchmark notes reported load and timing checks for INT8 ConvRot + NVFP4 MLP on an RTX 5090. Human quality review and comparison of DMAD's gate-quality behavior with B1 remain open. The report and receipts are not included here, so inspect them in the checkout containing the benchmark scripts before relying on those results. No speed or quality qualification is claimed here.
+Earlier benchmark notes reported load and timing checks for INT8 ConvRot + NVFP4 MLP on an RTX 5090. Human quality review and comparison of DMAD's gate-quality behavior with B1 remain open. The report and receipts are not included here; inspect them before relying on those results. No speed or quality qualification is claimed here.

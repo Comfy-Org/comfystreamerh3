@@ -1,11 +1,14 @@
 # ComfyStreamerH3
 
-The most optimized live-video-capable custom node for ComfyUI, built to run
-MiniMax-H3 with ComfyStream's FastH3 runtime on budget-friendly RTX 5090 and
-RTX 6000 Pro instances for $4/hour or less.
+This project is licensed under the [MIT License](LICENSE). Third-party
+components remain subject to their included licenses and notices.
 
-Generate live video at 448 × 256 on a single RTX 5090, then upscale it
-for higher-resolution output.
+The most optimized live-video node for ComfyUI: run MiniMax-H3 with
+ComfyStream's FastH3 runtime on RTX 5090 or RTX 6000 Pro instances for $4/hour
+or less.
+
+Generate live video at 448 × 256 on a single RTX 5090, then upscale it for
+higher-resolution output.
 
 ## Install
 
@@ -32,6 +35,9 @@ does not include model weights.
 | Audio VAE | `models/vae/` | `minimax_h3_audio_vae_fp32.safetensors` |
 | Video VAE | `models/vae/` | `minimax_h3_video_vae_int8_convrot.safetensors` |
 
+The sample workflow expects `ClipProjApply` from
+[ComfyUI-ClipProj](https://github.com/nicolab28/ComfyUI-ClipProj).
+
 ## Standard workflow
 
 1. **ComfyStreamerH3 Optimized Loader** loads a FastH3 preset and provides the
@@ -44,35 +50,37 @@ does not include model weights.
 5. **ComfyStreamerH3 Output** creates a file-backed `VIDEO` for preview,
    saving, or downstream nodes.
 
-For a minimal text-to-video graph with model setup and exact socket connections,
-see the [Quick start](QUICKSTART.md).
+A ready-to-run text-to-video API graph is in
+[`examples/basic_text_to_video_api.json`](examples/basic_text_to_video_api.json).
 
-## Interactive basic demo
+## Try the demo
 
-With this custom node installed in a ready Comfy Platform deployment, start
-the local prompt page from this repository:
+Run the prompt page against local ComfyUI, or add `--platform` to use a ready
+Comfy Developer Platform deployment. See the [quick start](QUICKSTART.md) for
+setup and run instructions.
+
+## Continuous live viewer
+
+To run the continuous HLS viewer with the resolution picker, launch the
+continuous demo instead:
 
 ```bash
-python3 examples/basic_demo.py --platform
+python3 examples/continuous_demo.py
 ```
 
-It opens `http://127.0.0.1:8765` and submits the graph from
-[`examples/basic_text_to_video_api.json`](examples/basic_text_to_video_api.json)
-through the logged-in Comfy CLI. It discovers ready deployments across the
-workspace, matches the RTX 5090 and RTX 6000 Pro profiles, and defaults to the
-GPU it finds. The other resolution remains selectable when a matching ready
-GPU is available. Omit `--platform` to use local ComfyUI, or set `COMFYUI_URL`
-/ pass `--comfy-url` when its address differs from `http://127.0.0.1:8188`.
+It uses the logged-in Comfy CLI to find ready workspace deployments, opens the
+existing GPU endpoint with a live prompt UI, and keeps the video stream
+running as new clips are generated. The picker defaults to the available GPU
+profile. This uses the ComfyStreamer runtime checkout beside this repository.
 
 ## Live throughput and sample clips
 
-On one RTX 5090, a warm 448×256 run produced two 15.08-second clips in a
+On one RTX 5090, a warm 448 × 256 run produced two 15.08-second clips in a
 median **23.51 seconds** across 11 jobs: **1.28× real time**. The run used
 four-step VSA.
 
-These four 15-second clips use the prompt “Will Smith eating spaghetti”; each
-uses a different visual style. They are examples, not the throughput runs
-above. Output: 448×256, 24 fps.
+Four sample clips use the prompt “Will Smith eating spaghetti” in different
+visual styles. Each is 15 seconds at 448 × 256 and 24 fps.
 
 | Style | Clip |
 |---|---|
@@ -103,33 +111,26 @@ comfy deploy status .
 ```
 
 With `--min 0`, workers scale to zero between jobs; the next job has a cold
-start. `comfy deploy status` shows the endpoint.
+start.
 
-Start the sample app against the deployment:
+After the deployment is ready, start the local prompt page:
 
 ```sh
-python3 examples/live_demo.py --platform
+python3 examples/basic_demo.py --platform
 ```
 
-The launcher reads the GPU endpoint from `comfy deploy status .` and starts with
-the prompt “Will Smith eating spaghetti.” Open the local player at
-`http://127.0.0.1:8765/live`. Platform mode renders at 512×320; local GPU mode
-remains 448×256. Edit the prompt below the video and select **Run prompt** to
-start a new run.
-
-Pause and resume the deployment when you plan to use it again:
+Pause the deployment when idle; resume it before sending jobs:
 
 ```sh
 comfy deploy stop .
 comfy deploy start .
 ```
 
-`stop` pauses compute but retains the endpoint and staged models, which can
-continue to incur storage charges. Builds and releases are free to keep. When
-you are finished, delete the deployment to enqueue teardown of its resources;
-the Build and release remain available. Storage billing ends shortly after the
-last deployment of that Build in a region is deleted. If you deployed it in
-multiple regions, delete each deployment:
+`stop` pauses compute, but the endpoint and staged models can still incur
+storage charges. Builds and releases are free to keep. When finished, delete
+each deployment to queue teardown; the Build and release remain available.
+Storage billing ends shortly after the Build's last deployment in each region
+is deleted:
 
 ```sh
 comfy deploy delete .

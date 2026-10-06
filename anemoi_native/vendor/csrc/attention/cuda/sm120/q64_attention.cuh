@@ -22,7 +22,7 @@
  * lists, the raw-FP16 rescue phase, and the in-register precision boundary.
  */
 
-// Modified by ComfyStream: optional block-scaled residual PV/represented-P
+// Modified for this project: optional block-scaled residual PV/represented-P
 // mean correction. Original upstream paths remain behind the default macro.
 #pragma once
 

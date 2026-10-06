@@ -171,7 +171,7 @@
           "10",
           1
         ],
-        "filename_prefix": "comfystream/benchmark-5090-15s-2026-10-06/stylized-3d",
+        "filename_prefix": "comfystreamerh3/benchmark-5090-15s-2026-10-06/stylized-3d",
         "fps": 24,
         "output_backend": "nvenc"
       }

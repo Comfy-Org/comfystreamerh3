@@ -1,5 +1,5 @@
 // Copyright 2026 Anemoi Project Contributors. Apache-2.0; see vendor/LICENSE.
-// Modified by ComfyStream from the pinned attention preparation source.
+// Modified for this project from the pinned attention preparation source.
 // Bounded Q64/K64/D128 preparation for the native SM120 INT8 attention path.
 // Layout/quantization donor: anemoi-review.PqNiN4, SM120
 // q128_microscaling_preparation.cu (prepare_h3_qk_microscaling_kernel and

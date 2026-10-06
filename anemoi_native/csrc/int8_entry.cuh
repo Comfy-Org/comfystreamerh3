@@ -1,4 +1,4 @@
-// ComfyStream isolated host ABI over pinned Anemoi's genuine INT8/FP8 MMA.
+// Project-isolated host ABI over pinned Anemoi's genuine INT8/FP8 MMA.
 #include "check.h"
 #define MPA_CTA_Q 64
 #define MPA_WARP_Q 16
