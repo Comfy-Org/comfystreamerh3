@@ -1,7 +1,11 @@
 # ComfyStreamerH3
 
-ComfyStreamerH3 is a ComfyUI custom-node pack for generating MiniMax-H3 video
-with ComfyStream's FastH3 runtime.
+The most optimized live-video-capable custom node for ComfyUI, built to run
+MiniMax-H3 with ComfyStream's FastH3 runtime on budget-friendly RTX 5090 and
+RTX 6000 Pro instances for $4/hour or less.
+
+Generate live video at 448 × 256 on a single RTX 5090, then upscale it
+for higher-resolution output.
 
 ## Install
 
@@ -39,6 +43,9 @@ weights.
    the latents.
 5. **ComfyStreamerH3 Output** creates a file-backed `VIDEO` for preview,
    saving, or downstream nodes.
+
+For a minimal text-to-video graph with model setup and exact socket connections,
+see the [Quick start](QUICKSTART.md).
 
 ## Deploy to the Comfy Developer Platform
 
