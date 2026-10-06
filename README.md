@@ -95,7 +95,8 @@ Start the sample app against the deployment:
 python3 examples/live_demo.py --platform
 ```
 
-Open `http://127.0.0.1:8765/live`.
+The launcher reads the GPU endpoint from `comfy deploy status .`. Open the local
+player at `http://127.0.0.1:8765/live`.
 
 Stop and resume the deployment:
 
