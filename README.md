@@ -68,11 +68,14 @@ above. Output: 448×256, 24 fps.
 
 ## Deploy to the Comfy Developer Platform
 
-The ComfyStream build packages this node with its pinned runtime and model
-files. A local ComfyUI install or GPU is not required to build or deploy it.
+The ComfyStream repository owns the build spec and deployment for this node. It
+packages this repo's custom node with the pinned Linux/NVIDIA runtime and model
+files. A local ComfyUI install or GPU is not required. The easiest path is the
+ComfyStream deployment helper, which runs the `comfy build` and `comfy deploy`
+CLI steps with the project's pinned settings.
 
 1. Copy this repository's node pack into
-   `comfystream/deploy/custom_nodes/fasth3_deploy/`. For example:
+   `comfystream/deploy/custom_nodes/fasth3_deploy/`:
 
    ```sh
    rsync -a --delete --exclude='.git/' --exclude='benchmark-results/' \
@@ -80,44 +83,37 @@ files. A local ComfyUI install or GPU is not required to build or deploy it.
      /path/to/comfystream/deploy/custom_nodes/fasth3_deploy/
    ```
 
-   This replaces the pack directory with the files from this repository.
-2. Add the pinned ClipProj custom node to the existing `customNodes` list in
-   `comfystream/deploy/comfy-build-shared-obs.yaml`:
+   This replaces the destination pack directory with the files from this
+   repository. The ComfyStream build spec already lists the required models and
+   pinned `ComfyUI-ClipProj` node; the build installs ClipProj automatically.
+   The manual clone in [Quick start](QUICKSTART.md) is only for local ComfyUI.
+2. Install the Comfy CLI and sign in with an account that has Developer
+   Platform access:
 
-   ```yaml
-   - gitRef: c01ba8fb8f41b4f2094dbd0b185cdc238fb6134c
-     name: ComfyUI-ClipProj
-     repository: https://github.com/nicolab28/ComfyUI-ClipProj
+   ```sh
+   python3 -m pip install -U comfy-cli
+   comfy cloud login
    ```
 
-   The build installs declared custom nodes automatically. The manual clone in
-   [Quick start](QUICKSTART.md) is only for local ComfyUI. Also make the build
-   spec include the model assets listed above. Its current ComfyStream
-   preflight still expects the 32B text encoder; update the model list and
-   preflight to match this node's Qwen 4B encoder and ClipProj MLP.
-3. Sign in with the Comfy CLI using an account with Developer Platform access.
-   Set these cost limits in the same shell before starting the deployment:
+3. From the ComfyStream repository root, create or resume the deployment and
+   check its status and URL:
 
-   | Variable | Purpose |
-   |---|---|
-   | `COMFYSTREAM_BUILD_ESTIMATE_USD` | Estimated build cost. |
-   | `COMFYSTREAM_BUILD_BUDGET_USD` | Maximum allowed build estimate. |
-   | `COMFYSTREAM_GPU_HOURLY_USD` | Declared hourly rate per GPU. |
-   | `COMFYSTREAM_OVERLAP_BUDGET_USD` | Maximum cost for overlapping workers. |
-   | `COMFYSTREAM_OVERLAP_MAX_SECONDS` | Maximum overlap duration. |
+   ```sh
+   cd /path/to/comfystream
+   ./scripts/deploy_comfystreamer.sh start
+   ./scripts/deploy_comfystreamer.sh status
+   ```
 
-4. From the ComfyStream repository root, create or resume the deployment and
-   check the worker status and URL:
+The helper refreshes the node pack, pushes the pinned build, creates a
+Linux/NVIDIA release when needed, and waits for the worker to become ready. It
+uses one warm `rtx-pro-6000-server` worker in `US-NE-1`. Running workers incur
+GPU charges. Stop the worker when it is not in use; this retains the deployment
+and its storage so it can be resumed later:
 
 ```sh
-cd /path/to/comfystream
-./scripts/deploy_comfystreamer.sh start
-./scripts/deploy_comfystreamer.sh status
+./scripts/deploy_comfystreamer.sh stop
 ```
 
-The helper uploads the node pack and pinned runtime, creates a Linux/NVIDIA
-release when needed, and waits for the worker to become ready. Run
-`./scripts/deploy_comfystreamer.sh stop` to stop the GPU worker while retaining
-the deployment and storage. Run `./scripts/deploy_comfystreamer.sh remove` to
-delete the cloud deployment and build while keeping the local build spec.
-Running workers incur GPU charges; stopped deployments retain storage.
+Use `./scripts/deploy_comfystreamer.sh start` to resume it. To delete the cloud
+deployment and build while keeping the local build spec, run
+`./scripts/deploy_comfystreamer.sh remove`.
