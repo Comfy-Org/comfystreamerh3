@@ -20,39 +20,6 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/Comfy-Org/comfystreamerh3.git
 ```
 
-## Runtime and models
-
-The managed runtime targets Linux with an NVIDIA GPU, Python 3.12, CUDA 13
-PyTorch, matching TorchVision and TorchAudio builds, and `comfy-kitchen` 0.2.34.
-The build configuration pins the runtime and model assets. The node repository
-does not include model weights.
-
-| Model | ComfyUI folder | Managed build filename |
-|---|---|---|
-| FastH3 checkpoint | `models/diffusion_models/` | `fastvideo_fasth3_8step_v2_pruned_int8_convrot.safetensors` |
-| Text encoder | `models/text_encoders/` | `qwen3vl_4b_fp8_scaled.safetensors` |
-| ClipProj MLP | `models/clip_projections/` | `mmh3-4b-ClipProj-v3.1-mlp.safetensors` |
-| Audio VAE | `models/vae/` | `minimax_h3_audio_vae_fp32.safetensors` |
-| Video VAE | `models/vae/` | `minimax_h3_video_vae_int8_convrot.safetensors` |
-
-The sample workflow expects `ClipProjApply` from
-[ComfyUI-ClipProj](https://github.com/nicolab28/ComfyUI-ClipProj).
-
-## Standard workflow
-
-1. **ComfyStreamerH3 Optimized Loader** loads a FastH3 preset and provides the
-   model, sampler, sigmas, and profile.
-2. **ComfyStreamerH3 Image to Video** sets the prompt, output size, and frame
-   count. First/last frames and reference images are optional.
-3. **ComfyStreamerH3 Sampler** generates video and audio latents.
-4. **ComfyStreamerH3 Video Decode** and **ComfyStreamerH3 Audio Decode** decode
-   the latents.
-5. **ComfyStreamerH3 Output** creates a file-backed `VIDEO` for preview,
-   saving, or downstream nodes.
-
-A ready-to-run text-to-video API graph is in
-[`examples/basic_text_to_video_api.json`](examples/basic_text_to_video_api.json).
-
 ## Try the demo
 
 Run the prompt page against local ComfyUI, or add `--platform` to use a ready
@@ -135,3 +102,36 @@ is deleted:
 ```sh
 comfy deploy delete .
 ```
+
+## Runtime and models
+
+The managed runtime targets Linux with an NVIDIA GPU, Python 3.12, CUDA 13
+PyTorch, matching TorchVision and TorchAudio builds, and `comfy-kitchen` 0.2.34.
+The build configuration pins the runtime and model assets. The node repository
+does not include model weights.
+
+| Model | ComfyUI folder | Managed build filename |
+|---|---|---|
+| FastH3 checkpoint | `models/diffusion_models/` | `fastvideo_fasth3_8step_v2_pruned_int8_convrot.safetensors` |
+| Text encoder | `models/text_encoders/` | `qwen3vl_4b_fp8_scaled.safetensors` |
+| ClipProj MLP | `models/clip_projections/` | `mmh3-4b-ClipProj-v3.1-mlp.safetensors` |
+| Audio VAE | `models/vae/` | `minimax_h3_audio_vae_fp32.safetensors` |
+| Video VAE | `models/vae/` | `minimax_h3_video_vae_int8_convrot.safetensors` |
+
+The sample workflow expects `ClipProjApply` from
+[ComfyUI-ClipProj](https://github.com/nicolab28/ComfyUI-ClipProj).
+
+## Standard workflow
+
+1. **ComfyStreamerH3 Optimized Loader** loads a FastH3 preset and provides the
+   model, sampler, sigmas, and profile.
+2. **ComfyStreamerH3 Image to Video** sets the prompt, output size, and frame
+   count. First/last frames and reference images are optional.
+3. **ComfyStreamerH3 Sampler** generates video and audio latents.
+4. **ComfyStreamerH3 Video Decode** and **ComfyStreamerH3 Audio Decode** decode
+   the latents.
+5. **ComfyStreamerH3 Output** creates a file-backed `VIDEO` for preview,
+   saving, or downstream nodes.
+
+A ready-to-run text-to-video API graph is in
+[`examples/basic_text_to_video_api.json`](examples/basic_text_to_video_api.json).
