@@ -68,21 +68,14 @@ above. Output: 448×256, 24 fps.
 
 ## Deploy to the Comfy Developer Platform
 
-`comfy-build.yaml` in this repository pins the Linux/NVIDIA runtime, model
-assets, and ClipProj dependency. Its local custom-node entry points to this
-repository, so deploy from the repository root; no ComfyUI install, GPU, sibling
-checkout, or file-copy step is needed.
-
-Install the Comfy CLI and sign in with an account that has Developer Platform
-access:
+Install the Comfy CLI and sign in:
 
 ```sh
 python3 -m pip install -U comfy-cli
 comfy cloud login
 ```
 
-From this repository root, validate and push the build, create a Linux/NVIDIA
-release, then deploy it:
+From the repository root:
 
 ```sh
 comfy build validate . --custom-nodes-dir .
@@ -92,17 +85,13 @@ comfy deploy up . --min 0 --max 1 --watch
 comfy deploy status .
 ```
 
-`comfy deploy up` prompts for a currently available GPU and region. The example
-scales to zero between jobs, which avoids keeping a worker warm but adds a cold
-start when the next job arrives. `comfy deploy status` prints the endpoint URL.
-Stop the deployment when it is not in use; this keeps it available to resume
-later:
+`comfy deploy up` prompts for GPU and region. With `--min 0`, workers scale to
+zero between jobs; the next job has a cold start. `comfy deploy status` shows
+the endpoint.
+
+Stop and resume the deployment:
 
 ```sh
 comfy deploy stop .
+comfy deploy start .
 ```
-
-To resume it, run `comfy deploy start .`. When deploying a new release, check
-`comfy deploy ls .`: the old release's deployment keeps running until you stop
-it. The Comfy CLI also supports `comfy deploy run . --workflow <api-workflow>`
-to submit an API-format workflow directly to the deployment.
