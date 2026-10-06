@@ -68,52 +68,40 @@ above. Output: 448×256, 24 fps.
 
 ## Deploy to the Comfy Developer Platform
 
-The ComfyStream repository owns the build spec and deployment for this node. It
-packages this repo's custom node with the pinned Linux/NVIDIA runtime and model
-files. A local ComfyUI install or GPU is not required. The easiest path is the
-ComfyStream deployment helper, which runs the `comfy build` and `comfy deploy`
-CLI steps with the project's pinned settings.
+`comfy-build.yaml` in this repository pins the Linux/NVIDIA runtime, model
+assets, and ClipProj dependency. Its local custom-node entry points to this
+repository, so deploy from the repository root; no ComfyUI install, GPU, sibling
+checkout, or file-copy step is needed.
 
-1. Copy this repository's node pack into
-   `comfystream/deploy/custom_nodes/fasth3_deploy/`:
-
-   ```sh
-   rsync -a --delete --exclude='.git/' --exclude='benchmark-results/' \
-     /path/to/comfystreamerh3/ \
-     /path/to/comfystream/deploy/custom_nodes/fasth3_deploy/
-   ```
-
-   This replaces the destination pack directory with the files from this
-   repository. The ComfyStream build spec already lists the required models and
-   pinned `ComfyUI-ClipProj` node; the build installs ClipProj automatically.
-   The manual clone in [Quick start](QUICKSTART.md) is only for local ComfyUI.
-2. Install the Comfy CLI and sign in with an account that has Developer
-   Platform access:
-
-   ```sh
-   python3 -m pip install -U comfy-cli
-   comfy cloud login
-   ```
-
-3. From the ComfyStream repository root, create or resume the deployment and
-   check its status and URL:
-
-   ```sh
-   cd /path/to/comfystream
-   ./scripts/deploy_comfystreamer.sh start
-   ./scripts/deploy_comfystreamer.sh status
-   ```
-
-The helper refreshes the node pack, pushes the pinned build, creates a
-Linux/NVIDIA release when needed, and waits for the worker to become ready. It
-uses one warm `rtx-pro-6000-server` worker in `US-NE-1`. Running workers incur
-GPU charges. Stop the worker when it is not in use; this retains the deployment
-and its storage so it can be resumed later:
+Install the Comfy CLI and sign in with an account that has Developer Platform
+access:
 
 ```sh
-./scripts/deploy_comfystreamer.sh stop
+python3 -m pip install -U comfy-cli
+comfy cloud login
 ```
 
-Use `./scripts/deploy_comfystreamer.sh start` to resume it. To delete the cloud
-deployment and build while keeping the local build spec, run
-`./scripts/deploy_comfystreamer.sh remove`.
+From this repository root, validate and push the build, create a Linux/NVIDIA
+release, then deploy it:
+
+```sh
+comfy build validate . --custom-nodes-dir .
+comfy build push . --custom-nodes-dir .
+comfy build release create . --target linux/nvidia --watch
+comfy deploy up . --min 1 --max 1 --watch
+comfy deploy status .
+```
+
+`comfy deploy up` prompts for a currently available GPU and region. The example
+keeps one worker warm for live video, which incurs GPU charges while running.
+`comfy deploy status` prints the endpoint URL. Stop the deployment when it is
+not in use; this keeps it available to resume later:
+
+```sh
+comfy deploy stop .
+```
+
+To resume it, run `comfy deploy start .`. When deploying a new release, check
+`comfy deploy ls .`: the old release's deployment keeps running until you stop
+it. The Comfy CLI also supports `comfy deploy run . --workflow <api-workflow>`
+to submit an API-format workflow directly to the deployment.
