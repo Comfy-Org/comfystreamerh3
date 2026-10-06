@@ -114,18 +114,3 @@ does not include model weights.
 
 The sample workflow expects `ClipProjApply` from
 [ComfyUI-ClipProj](https://github.com/nicolab28/ComfyUI-ClipProj).
-
-## Standard workflow
-
-1. **ComfyStreamerH3 Optimized Loader** loads a FastH3 preset and provides the
-   model, sampler, sigmas, and profile.
-2. **ComfyStreamerH3 Image to Video** sets the prompt, output size, and frame
-   count. First/last frames and reference images are optional.
-3. **ComfyStreamerH3 Sampler** generates video and audio latents.
-4. **ComfyStreamerH3 Video Decode** and **ComfyStreamerH3 Audio Decode** decode
-   the latents.
-5. **ComfyStreamerH3 Output** creates a file-backed `VIDEO` for preview,
-   saving, or downstream nodes.
-
-A ready-to-run text-to-video API graph is in
-[`examples/basic_text_to_video_api.json`](examples/basic_text_to_video_api.json).
