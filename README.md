@@ -88,14 +88,15 @@ release, then deploy it:
 comfy build validate . --custom-nodes-dir .
 comfy build push . --custom-nodes-dir .
 comfy build release create . --target linux/nvidia --watch
-comfy deploy up . --min 1 --max 1 --watch
+comfy deploy up . --min 0 --max 1 --watch
 comfy deploy status .
 ```
 
 `comfy deploy up` prompts for a currently available GPU and region. The example
-keeps one worker warm for live video, which incurs GPU charges while running.
-`comfy deploy status` prints the endpoint URL. Stop the deployment when it is
-not in use; this keeps it available to resume later:
+scales to zero between jobs, which avoids keeping a worker warm but adds a cold
+start when the next job arrives. `comfy deploy status` prints the endpoint URL.
+Stop the deployment when it is not in use; this keeps it available to resume
+later:
 
 ```sh
 comfy deploy stop .
