@@ -2,6 +2,41 @@
 
 This small text-to-video graph follows the optimized FastH3 path used by ComfyStream's direct provider. It uses the B1 four-step VSA-20 preset at 448×256 for 362 frames (about 15 seconds at 24 fps), with QKV compilation, fused NVFP4 MLP when the GPU supports it, tiled GPU decode, and NVENC output. It leaves experimental attention and producer flags off.
 
+## Show continuous video in a local browser
+
+For a continuous show, run ComfyStream's local coordinator and use its built-in HLS player. This uses the fast provider settings and keeps submitting segments while the coordinator is running; the API JSON below is only a one-shot MP4 test.
+
+First, make sure the FastH3 ComfyUI worker is running this node pack and is reachable at a ComfyUI API URL. From the sibling ComfyStream checkout, start the local coordinator:
+
+For a Lium worker, forward its ComfyUI port in a second terminal and leave the tunnel open:
+
+```bash
+ssh -N -L 8188:127.0.0.1:8000 -p <ssh-port> root@<worker-host>
+```
+
+Then use `http://127.0.0.1:8188` as the GPU endpoint below. Replace the host and port with the values in the pod's `ssh_connect_cmd`.
+
+```bash
+cd ../comfystream
+uv run --no-sync python -m comfystream \
+  --renderer fasth3 \
+  --gpu-endpoints http://127.0.0.1:8188 \
+  --experimental-fasth3 \
+  --generation-profile compact \
+  --topology separate_pods \
+  --director-provider disabled \
+  --state-path /tmp/comfystream-fast-live/state.json \
+  --media-root /tmp/comfystream-fast-live/media
+```
+
+The coordinator starts the continuous flow automatically. Open the local player in a browser (or run `open` on macOS to pop it up), click **Play** once, then click **Enable sound** if needed:
+
+```bash
+open http://127.0.0.1:8765/live
+```
+
+If ComfyUI is on another machine, replace the worker URL with its reachable API URL. For a private Lium worker, forward its ComfyUI port over SSH and use the local forwarded URL. Press `Ctrl+C` in the coordinator terminal to stop the flow; the browser player can stay open.
+
 ## Requirements
 
 Install this node pack under `ComfyUI/custom_nodes/comfystreamerh3`, install the pinned managed runtime, and restart ComfyUI. The production B1 preset requires Linux, an NVIDIA GPU, Python 3.12, CUDA 13 PyTorch, and `comfy-kitchen` 0.2.34 with the matching CUDA extension.
@@ -17,7 +52,7 @@ Place these model files in the indicated ComfyUI folders, then restart or refres
 
 The model files are not included in this repository. Use the managed build's matching model assets and runtime; see [README.md](README.md#runtime-and-models).
 
-## Queue the example through ComfyUI's API
+## One-shot MP4 test through ComfyUI's API
 
 The ready-to-run API prompt is [`examples/basic_text_to_video_api.json`](examples/basic_text_to_video_api.json). With ComfyUI running at the default local address, submit it from the repository root:
 
@@ -27,7 +62,7 @@ curl -X POST http://127.0.0.1:8188/prompt \
   --data-binary @examples/basic_text_to_video_api.json
 ```
 
-The response includes a `prompt_id` for queue/history lookup. The MP4 is saved under `ComfyUI/output/comfystream/quickstart/`. To build the same graph on the canvas instead, add and connect the nodes below.
+The response includes a `prompt_id` for queue/history lookup. This one-shot graph saves a completed MP4 under `ComfyUI/output/comfystream/quickstart/`; use the local `/live` player above for continuous playback. To build the same graph on the canvas instead, add and connect the nodes below.
 
 ## Add these nodes
 
@@ -69,7 +104,7 @@ The decoder settings follow the fast provider path: finalized-tile streaming, ou
 
 Set the Sampler's `run_nonce` to a non-empty label such as `quickstart-001`; change it for a new run. The API example uses `comfystream/quickstart` as its output prefix.
 
-The output node writes an MP4 under ComfyUI's output folder and exposes the video preview. The video decoder's `audio_vae` connection starts audio decoding alongside video decoding; Audio Decode passes the updated report and audio track to Output. ComfyStream's direct provider wraps this same optimized graph with progressive clip delivery; submitting the example directly to `/prompt` returns a completed MP4.
+The output node writes an MP4 under ComfyUI's output folder and exposes the video preview. The video decoder's `audio_vae` connection starts audio decoding alongside video decoding; Audio Decode passes the updated report and audio track to Output.
 
 ## If it does not start
 
