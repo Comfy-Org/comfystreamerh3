@@ -40,6 +40,8 @@ def main() -> int:
     env = os.environ.copy()
     env["COMFYSTREAM_H3_TEXT_ENCODER_PROFILE"] = "clipproj_4b_v31_mlp"
     if args.platform:
+        env.pop("COMFY_API_KEY", None)
+        env.pop("COMFY_CLOUD_API_KEY", None)
         result = subprocess.run(
             ["comfy", "--json", "deploy", "status", str(node_repo)],
             check=True,
@@ -62,7 +64,9 @@ def main() -> int:
             "--generation-profile", "compact",
         ]
     command = [
-        "uv", "run", "--no-sync", "python", "-m", "comfystream",
+        "uv", "run", "--no-sync", "--with", "comfy-cli==1.22.0",
+        "python", "-m", "comfystream",
+        "--flow-settings", str(node_repo / "examples" / "live-demo-flow.toml"),
         *backend_args,
         "--topology", "separate_pods",
         "--director-provider", "disabled",
@@ -87,6 +91,7 @@ def main() -> int:
             process.terminate()
             raise SystemExit("ComfyStream did not start within 60 seconds.")
 
+        print("Prompt: Will Smith eating spaghetti.", flush=True)
         print(f"Live video: {player_url}", flush=True)
         webbrowser.open_new_tab(player_url)
         return process.wait()

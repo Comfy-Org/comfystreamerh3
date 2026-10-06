@@ -81,13 +81,12 @@ From the repository root:
 comfy build validate . --custom-nodes-dir .
 comfy build push . --custom-nodes-dir .
 comfy build release create . --target linux/nvidia --watch
-comfy deploy up . --min 0 --max 1 --watch
+comfy deploy up . --gpu rtx-pro-6000-server --region anywhere --min 0 --max 1 --watch
 comfy deploy status .
 ```
 
-`comfy deploy up` prompts for GPU and region. With `--min 0`, workers scale to
-zero between jobs; the next job has a cold start. `comfy deploy status` shows
-the endpoint.
+With `--min 0`, workers scale to zero between jobs; the next job has a cold
+start. `comfy deploy status` shows the endpoint.
 
 Start the sample app against the deployment:
 
@@ -95,9 +94,10 @@ Start the sample app against the deployment:
 python3 examples/live_demo.py --platform
 ```
 
-The launcher reads the GPU endpoint from `comfy deploy status .`. Open the local
-player at `http://127.0.0.1:8765/live`. Platform mode renders at 512×320; local
-GPU mode remains 448×256.
+The launcher reads the GPU endpoint from `comfy deploy status .` and starts with
+the prompt “Will Smith eating spaghetti.” Open the local player at
+`http://127.0.0.1:8765/live`. Platform mode renders at 512×320; local GPU mode
+remains 448×256.
 
 Stop and resume the deployment:
 
