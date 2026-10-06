@@ -96,7 +96,8 @@ python3 examples/live_demo.py --platform
 ```
 
 The launcher reads the GPU endpoint from `comfy deploy status .`. Open the local
-player at `http://127.0.0.1:8765/live`.
+player at `http://127.0.0.1:8765/live`. Platform mode renders at 512×320; local
+GPU mode remains 448×256.
 
 Stop and resume the deployment:
 
