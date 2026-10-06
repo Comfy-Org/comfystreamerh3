@@ -54,8 +54,6 @@ field and resolution picker:
 python3 examples/continuous_demo.py
 ```
 
-The continuous viewer prompt defaults to “Will Smith eating spaghetti.”
-
 Delete each deployment when you are done to remove its endpoint. Builds and
 releases are free to keep. Storage billing ends shortly after the Build's last
 deployment in each region is deleted:
