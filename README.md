@@ -68,6 +68,8 @@ above. Output: 448×256, 24 fps.
 
 ## Deploy to the Comfy Developer Platform
 
+Sign up for a [Comfy plan](https://comfy.org/pricing/) to deploy.
+
 Install the Comfy CLI and sign in:
 
 ```sh
@@ -99,9 +101,20 @@ the prompt “Will Smith eating spaghetti.” Open the local player at
 `http://127.0.0.1:8765/live`. Platform mode renders at 512×320; local GPU mode
 remains 448×256.
 
-Stop and resume the deployment:
+Pause and resume the deployment when you plan to use it again:
 
 ```sh
 comfy deploy stop .
 comfy deploy start .
+```
+
+`stop` pauses compute but retains the endpoint and staged models, which can
+continue to incur storage charges. Builds and releases are free to keep. When
+you are finished, delete the deployment to enqueue teardown of its resources;
+the Build and release remain available. Storage billing ends shortly after the
+last deployment of that Build in a region is deleted. If you deployed it in
+multiple regions, delete each deployment:
+
+```sh
+comfy deploy delete .
 ```

@@ -91,9 +91,17 @@ def main() -> int:
             process.terminate()
             raise SystemExit("ComfyStream did not start within 60 seconds.")
 
+        connection_path = state_dir / "bootstrap" / "connection-v1.json"
+        try:
+            operator_token = json.loads(connection_path.read_text())["operator_token"]
+        except (OSError, KeyError, json.JSONDecodeError) as error:
+            process.terminate()
+            process.wait()
+            raise SystemExit("ComfyStreamer did not provide its local operator token.") from error
+        browser_url = f"{player_url}#operator={operator_token}"
         print("Prompt: Will Smith eating spaghetti.", flush=True)
         print(f"Live video: {player_url}", flush=True)
-        webbrowser.open_new_tab(player_url)
+        webbrowser.open_new_tab(browser_url)
         return process.wait()
     except KeyboardInterrupt:
         process.send_signal(signal.SIGINT)
