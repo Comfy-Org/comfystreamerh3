@@ -45,11 +45,14 @@ With `--min 0`, the deployment scales to zero when idle, avoiding ongoing GPU
 charges at the cost of a cold start for the next job. Staged model storage is
 still billed while any deployment of the Build exists in a region.
 
-After the deployment is ready, start the local prompt page:
+After the deployment is ready, start the continuous HLS viewer with the prompt
+field and resolution picker:
 
 ```sh
-python3 examples/basic_demo.py --platform
+python3 examples/continuous_demo.py
 ```
+
+The continuous viewer prompt defaults to “Will Smith eating spaghetti.”
 
 Delete each deployment when you are done to remove its endpoint. Builds and
 releases are free to keep. Storage billing ends shortly after the Build's last

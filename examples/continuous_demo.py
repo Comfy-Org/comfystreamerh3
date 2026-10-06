@@ -14,12 +14,91 @@ import time
 import urllib.request
 import webbrowser
 from pathlib import Path
-
-from basic_demo import WORKFLOW_PATH, discover_ready_gpu_profiles
+from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
+WORKFLOW_PATH = ROOT / "examples" / "basic_text_to_video_api.json"
 COMFYSTREAM = ROOT.parent / "comfystream"
+
+
+def _cli_error(stdout: str, stderr: str) -> str:
+    for line in reversed(stdout.splitlines()):
+        try:
+            envelope = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        error = envelope.get("error")
+        if isinstance(error, dict) and isinstance(error.get("message"), str):
+            return error["message"]
+    return (stderr or stdout).strip()[-1500:]
+
+
+def _gpu_resolution(gpu_class: object) -> str | None:
+    if not isinstance(gpu_class, str):
+        return None
+    normalized = gpu_class.lower().replace("_", "-")
+    if "5090" in normalized:
+        return "448x256"
+    if "6000" in normalized:
+        return "512x320"
+    return None
+
+
+def _gpu_name(resolution: str) -> str:
+    return "RTX 5090" if resolution == "448x256" else "RTX 6000 Pro"
+
+
+def _ready_gpu_profiles(deployments: list[object]) -> dict[str, dict[str, Any]]:
+    candidates: dict[str, list[tuple[str, str, str]]] = {"448x256": [], "512x320": []}
+    for deployment in deployments:
+        if not isinstance(deployment, dict) or deployment.get("status") != "ready":
+            continue
+        compute = deployment.get("computeConfig")
+        gpu_class = compute.get("gpuClass") if isinstance(compute, dict) else None
+        resolution = _gpu_resolution(gpu_class)
+        deployment_id = deployment.get("id")
+        deployment_url = deployment.get("endpointUrl")
+        if (
+            resolution
+            and isinstance(deployment_id, str)
+            and deployment_id
+            and isinstance(deployment_url, str)
+            and deployment_url
+        ):
+            candidates[resolution].append((
+                str(deployment.get("updatedAt") or ""), deployment_id, deployment_url
+            ))
+    profiles: dict[str, dict[str, Any]] = {}
+    for resolution, ready in candidates.items():
+        if not ready:
+            continue
+        _, deployment_id, deployment_url = max(ready, key=lambda item: item[0])
+        profiles[resolution] = {
+            "deploymentId": deployment_id,
+            "deploymentUrl": deployment_url,
+            "width": 448 if resolution == "448x256" else 512,
+            "height": 256 if resolution == "448x256" else 320,
+            "gpuLabel": _gpu_name(resolution),
+        }
+    return profiles
+
+
+def discover_ready_gpu_profiles() -> dict[str, dict[str, Any]]:
+    """Find already-ready workspace GPUs through the logged-in Comfy CLI."""
+    result = subprocess.run(
+        ["comfy", "--json", "deploy", "ls", "--workspace", "--status", "ready"],
+        capture_output=True, text=True, timeout=30, check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(_cli_error(result.stdout, result.stderr) or "Comfy Platform discovery failed")
+    envelope = json.loads(result.stdout)
+    if not envelope.get("ok"):
+        raise RuntimeError(_cli_error(result.stdout, result.stderr) or "Comfy Platform discovery failed")
+    deployments = envelope["data"]["deployments"]
+    if not isinstance(deployments, list):
+        raise ValueError("Comfy CLI returned an invalid deployment list")
+    return _ready_gpu_profiles(deployments)
 
 
 def _toml_string(value: str) -> str:
@@ -81,6 +160,10 @@ def main() -> int:
     flow_path = state_dir / "flow.toml"
     flow_path.write_text(_flow_settings(prompt))
     env = os.environ.copy()
+    # The legacy COMFY_API_KEY is a ComfyUI/API-node key, not the account OAuth
+    # credential required by `comfy deploy show/run`; let the CLI use its login.
+    env.pop("COMFY_API_KEY", None)
+    env.pop("COMFY_CLOUD_API_KEY", None)
     env["COMFYSTREAM_H3_TEXT_ENCODER_PROFILE"] = "clipproj_4b_v31_mlp"
     env["COMFYSTREAM_RESOLUTION_PROFILES_JSON"] = json.dumps(profiles)
     env["COMFYSTREAM_DEFAULT_RESOLUTION"] = default_resolution
