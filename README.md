@@ -41,8 +41,9 @@ comfy deploy up . --gpu rtx-pro-6000-server --region anywhere --min 0 --max 1 --
 comfy deploy status .
 ```
 
-With `--min 0`, workers scale to zero between jobs; the next job has a cold
-start.
+With `--min 0`, the deployment scales to zero when idle, avoiding ongoing GPU
+charges at the cost of a cold start for the next job. Staged model storage is
+still billed while any deployment of the Build exists in a region.
 
 After the deployment is ready, start the local prompt page:
 
@@ -50,18 +51,9 @@ After the deployment is ready, start the local prompt page:
 python3 examples/basic_demo.py --platform
 ```
 
-Pause the deployment when idle; resume it before sending jobs:
-
-```sh
-comfy deploy stop .
-comfy deploy start .
-```
-
-`stop` pauses compute, but the endpoint and staged models can still incur
-storage charges. Builds and releases are free to keep. When finished, delete
-each deployment to queue teardown; the Build and release remain available.
-Storage billing ends shortly after the Build's last deployment in each region
-is deleted:
+Delete each deployment when you are done to remove its endpoint. Builds and
+releases are free to keep. Storage billing ends shortly after the Build's last
+deployment in each region is deleted:
 
 ```sh
 comfy deploy delete .
